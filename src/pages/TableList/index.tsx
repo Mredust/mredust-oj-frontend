@@ -1,6 +1,6 @@
-import { addRule, removeRule, rule, updateRule } from '@/services/ant-design-pro/api';
-import { PlusOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
+import {addRule, removeRule, rule, updateRule} from '@/services/ant-design-pro/api';
+import {PlusOutlined} from '@ant-design/icons';
+import type {ActionType, ProColumns, ProDescriptionsItemProps} from '@ant-design/pro-components';
 import {
   FooterToolbar,
   ModalForm,
@@ -11,10 +11,10 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import '@umijs/max';
-import { Button, Drawer, Input, message } from 'antd';
-import React, { useRef, useState } from 'react';
-import type { FormValueType } from './components/UpdateForm';
-import UpdateForm from './components/UpdateForm';
+import {Button, Drawer, Input, message} from 'antd';
+import React, {useRef, useState} from 'react';
+import type {FormValueType} from '../ProblemSet/components/UpdateForm';
+import UpdateForm from '../ProblemSet/components/UpdateForm';
 
 /**
  * @en-US Add node
@@ -108,7 +108,6 @@ const TableList: React.FC = () => {
     {
       title: '规则名称',
       dataIndex: 'name',
-      tip: 'The rule name is the unique key',
       render: (dom, entity) => {
         return (
           <a
@@ -162,13 +161,13 @@ const TableList: React.FC = () => {
       sorter: true,
       dataIndex: 'updatedAt',
       valueType: 'dateTime',
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
+      renderFormItem: (item, {defaultRender, ...rest}, form) => {
         const status = form.getFieldValue('status');
         if (`${status}` === '0') {
           return false;
         }
         if (`${status}` === '3') {
-          return <Input {...rest} placeholder={'请输入异常原因！'} />;
+          return <Input {...rest} placeholder={'请输入异常原因！'}/>;
         }
         return defaultRender(item);
       },
@@ -210,7 +209,7 @@ const TableList: React.FC = () => {
               handleModalOpen(true);
             }}
           >
-            <PlusOutlined /> 新建
+            <PlusOutlined/> 新建
           </Button>,
         ]}
         request={rule}
@@ -277,7 +276,7 @@ const TableList: React.FC = () => {
           width="md"
           name="name"
         />
-        <ProFormTextArea width="md" name="desc" />
+        <ProFormTextArea width="md" name="desc"/>
       </ModalForm>
       <UpdateForm
         onSubmit={async (value) => {
