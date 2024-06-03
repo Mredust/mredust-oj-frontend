@@ -1,4 +1,4 @@
-import { Footer } from '@/components';
+import { Footer } from '@/layout';
 import { login } from '@/services/ant-design-pro/api';
 import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 import {
