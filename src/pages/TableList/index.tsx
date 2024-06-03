@@ -13,8 +13,8 @@ import {
 import '@umijs/max';
 import {Button, Drawer, Input, message} from 'antd';
 import React, {useRef, useState} from 'react';
-import type {FormValueType} from '../ProblemSet/components/UpdateForm';
-import UpdateForm from '../ProblemSet/components/UpdateForm';
+import type {FormValueType} from './components/UpdateForm';
+import UpdateForm from './components/UpdateForm';
 
 /**
  * @en-US Add node

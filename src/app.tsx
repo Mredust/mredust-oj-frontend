@@ -117,7 +117,6 @@ export const layout: RunTimeLayoutConfig = ({initialState, setInitialState}) => 
       );
     },
     ...initialState?.settings,
-    layout: 'top'
   };
 };
 

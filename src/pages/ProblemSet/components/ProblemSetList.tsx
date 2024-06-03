@@ -1,9 +1,11 @@
 import React, {useState} from "react";
-import {Button, Card, Col, Row, Select, Tag, Tooltip} from "antd";
+import {Card, Col, Row, Select, Tag} from "antd";
 import Search from "antd/es/input/Search";
 import {CheckCircleOutlined, CloseCircleOutlined, TagsOutlined} from "@ant-design/icons";
 import {history, useNavigate} from "@@/exports";
 import {ProColumns, ProTable} from "@ant-design/pro-components";
+import {Color} from "@/utils/colorUtils";
+import '../index.less';
 
 const SafeProblemTable: React.FC = () => {
   const navigate = useNavigate();
@@ -79,26 +81,26 @@ const SafeProblemTable: React.FC = () => {
     {
       id: 1,
       title: "两数之和",
-      status: '已通过',
+      status: 1,
       acceptedNum: 20,
       submitNum: 44,
-      difficulty: "中等"
+      difficulty: 1
     },
     {
       id: 2,
       title: "链表",
-      status: '已通过',
+      status: 1,
       acceptedNum: 120,
       submitNum: 414,
-      difficulty: "中等"
+      difficulty: 2
     },
     {
       id: 3,
-      title: "图表",
-      status: '未通过',
+      title: "正则表达式匹配",
+      status: 2,
       acceptedNum: 10,
       submitNum: 4,
-      difficulty: "困难"
+      difficulty: 3
     },
   ]
 
@@ -110,8 +112,8 @@ const SafeProblemTable: React.FC = () => {
       render: (_, problem) => (
         <>
           {
-            problem.status === '尝试过' && <CloseCircleOutlined style={{fontSize: 18,}}/> ||
-            problem.status === '已通过' && <CheckCircleOutlined style={{fontSize: 18,}}/>
+            problem.status === 1 && <CheckCircleOutlined style={{fontSize: 18, color: Color.EASY}}/> ||
+            problem.status === 2 && <CloseCircleOutlined style={{fontSize: 18, color: Color.MEDIUM}}/>
           }
         </>
       ),
@@ -121,7 +123,9 @@ const SafeProblemTable: React.FC = () => {
       width: '20%',
       ellipsis: true,
       render: (_, problem) => (
-        <>{`${problem.id}. ${problem.title}`}</>
+        <>
+          <div className="divClassName" onClick={() => clickInspect(problem.id)}>{`${problem.id}. ${problem.title}`}</div>
+        </>
       ),
     },
     {
@@ -134,32 +138,18 @@ const SafeProblemTable: React.FC = () => {
     },
     {
       title: '难度',
-      width: '5%',
+      width: '10%',
       align: 'center',
       render: (_, entity) => {
         return (<>
           {
-            entity.difficulty === '简单' && <span style={{marginRight: 0}}>简单</span> ||
-            entity.difficulty === '中等' && <span style={{marginRight: 0,}}>中等</span> ||
-            entity.difficulty === '困难' && <span style={{marginRight: 0}}>困难</span>
+            entity.difficulty === 1 && <span style={{marginRight: 0, color: Color.EASY}}>简单</span> ||
+            entity.difficulty === 2 && <span style={{marginRight: 0, color: Color.MEDIUM}}>中等</span> ||
+            entity.difficulty === 3 && <span style={{marginRight: 0, color: Color.HARD}}>困难</span>
           }
         </>)
       }
-    },
-    {
-      title: '操作',
-      valueType: 'option',
-      key: 'option',
-      width: '5%',
-      align: 'center',
-      render: (dom, entity) => {
-        return (<>
-          <Tooltip placement="top" title="查看" color="#FA541C">
-            <Button onClick={() => clickInspect(entity.id)} type="text"></Button>
-          </Tooltip>
-        </>);
-      },
-    },
+    }
   ];
 
   return (<Card style={{borderRadius: 4}}>
