@@ -1,13 +1,12 @@
 import {Footer} from '@/layout';
-import {userLoginUAPI} from '@/services/user/api';
 import {LockOutlined, UserOutlined,} from '@ant-design/icons';
-import {LoginForm, ProFormCheckbox, ProFormText,} from '@ant-design/pro-components';
-import {Helmet, history, useModel} from '@umijs/max';
+import {LoginForm, ProFormText,} from '@ant-design/pro-components';
+import {Helmet, history} from '@umijs/max';
 import {message, Tabs} from 'antd';
 import {createStyles} from 'antd-style';
 import React, {useState} from 'react';
-import {flushSync} from 'react-dom';
 import Settings from '../../../../config/defaultSettings';
+import {userRegisterAPI} from "@/services/user/api";
 
 const useStyles = createStyles(({token}) => {
   return {
@@ -45,41 +44,23 @@ const useStyles = createStyles(({token}) => {
   };
 });
 
-
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   const [type, setType] = useState<string>('account');
-  const {initialState, setInitialState} = useModel('@@initialState');
   const {styles} = useStyles();
-  const fetchUserInfo = async () => {
-    const userInfo = await initialState?.fetchUserInfo?.();
-    if (userInfo) {
-      flushSync(() => {
-        setInitialState((s) => ({
-          ...s,
-          currentUser: userInfo,
-        }));
-      });
-    }
-  };
-  const handleSubmit = async (values: UserAPI.UserLoginRequest) => {
+
+  const handleSubmit = async (values: UserAPI.UserRegisterRequest) => {
     try {
-      // 登录
-      const {code, msg}: any = await userLoginUAPI({
-        ...values,
-      });
+      const {code, msg}: any = await userRegisterAPI(values);
       if (code === 200) {
-        const defaultLoginSuccessMessage = '登录成功！';
+        const defaultLoginSuccessMessage = '注册成功！';
         message.success(defaultLoginSuccessMessage);
-        await fetchUserInfo();
-        const urlParams = new URL(window.location.href).searchParams;
-        history.push(urlParams.get('redirect') || '/');
+        history.push('/user/login');
         return;
       } else {
         message.error(msg);
       }
     } catch (error) {
-      const defaultLoginFailureMessage = '登录失败，请重试！';
-      console.log(error);
+      const defaultLoginFailureMessage = '注册失败，请重试！';
       message.error(defaultLoginFailureMessage);
     }
   };
@@ -87,7 +68,7 @@ const Login: React.FC = () => {
     <div className={styles.container}>
       <Helmet>
         <title>
-          {'登录'}- {Settings.title}
+          {'注册'}- {Settings.title}
         </title>
       </Helmet>
       <div
@@ -102,13 +83,18 @@ const Login: React.FC = () => {
             minWidth: 280,
             maxWidth: '75vw',
           }}
+          submitter={{
+            searchConfig: {
+              submitText: '注册'
+            }
+          }}
           logo={<img alt="logo" src="/logo.svg"/>}
           title="用户管理中心"
           initialValues={{
             autoLogin: true,
           }}
           onFinish={async (values) => {
-            await handleSubmit(values as UserAPI.UserLoginRequest);
+            await handleSubmit(values as UserAPI.UserRegisterRequest);
           }}
         >
           <Tabs
@@ -118,10 +104,11 @@ const Login: React.FC = () => {
             items={[
               {
                 key: 'account',
-                label: '用户登录',
+                label: '用户注册',
               }
             ]}
           />
+
           {type === 'account' && (
             <>
               <ProFormText
@@ -152,6 +139,20 @@ const Login: React.FC = () => {
                   },
                 ]}
               />
+              <ProFormText.Password
+                name="checkPassword"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <LockOutlined/>,
+                }}
+                placeholder={'确认密码: '}
+                rules={[
+                  {
+                    required: true,
+                    message: '确认密码是必填项！',
+                  },
+                ]}
+              />
             </>
           )}
           <div
@@ -159,18 +160,16 @@ const Login: React.FC = () => {
               marginBottom: 24,
             }}
           >
-            <ProFormCheckbox noStyle name="autoLogin">
-              自动登录
-            </ProFormCheckbox>
             <a
               style={{
                 float: 'right',
+                marginBottom: '10px',
               }}
               onClick={() => {
-                history.push('/user/register');
+                history.push('/user/login');
               }}
             >
-              新用户注册
+              返回登录
             </a>
           </div>
         </LoginForm>
@@ -179,4 +178,4 @@ const Login: React.FC = () => {
     </div>
   );
 };
-export default Login;
+export default Register;

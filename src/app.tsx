@@ -1,12 +1,12 @@
-import {AvatarDropdown, AvatarName, Footer, Question} from '@/layout';
-import {currentUser as queryCurrentUser} from '@/services/ant-design-pro/api';
+import {AvatarDropdown, AvatarName, Footer, Question} from './layout';
 import {LinkOutlined} from '@ant-design/icons';
 import type {Settings as LayoutSettings} from '@ant-design/pro-components';
 import {SettingDrawer} from '@ant-design/pro-components';
 import type {RunTimeLayoutConfig} from '@umijs/max';
 import {history, Link} from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
-import {errorConfig} from './requestErrorConfig';
+import {getLoginUserAPI} from "@/services/user/api";
+import {requestConfig} from "@/requestConfig";
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -16,16 +16,16 @@ const loginPath = '/user/login';
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser;
+  currentUser?: UserAPI.UserVO;
   loading?: boolean;
-  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  fetchUserInfo?: () => Promise<UserAPI.UserVO | undefined>;
 }> {
   const fetchUserInfo = async () => {
     try {
-      const msg = await queryCurrentUser({
+      const res = await getLoginUserAPI({
         skipErrorHandler: true,
       });
-      return msg.data;
+      return res.data;
     } catch (error) {
       history.push(loginPath);
     }
@@ -52,7 +52,7 @@ export const layout: RunTimeLayoutConfig = ({initialState, setInitialState}) => 
   return {
     actionsRender: () => [<Question key="doc"/>],
     avatarProps: {
-      src: initialState?.currentUser?.avatar,
+      src: initialState?.currentUser?.avatarUrl,
       title: <AvatarName/>,
       render: (_, avatarChildren) => {
         return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
@@ -122,9 +122,8 @@ export const layout: RunTimeLayoutConfig = ({initialState, setInitialState}) => 
 
 /**
  * @name request 配置，可以配置错误处理
- * 它基于 axios 和 ahooks 的 useRequest 提供了一套统一的网络请求和错误处理方案。
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request = {
-  ...errorConfig,
+  ...requestConfig,
 };

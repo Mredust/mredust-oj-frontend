@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {Card, Col, Row, Select, Tag} from "antd";
 import Search from "antd/es/input/Search";
 import {CheckCircleOutlined, CloseCircleOutlined, TagsOutlined} from "@ant-design/icons";
-import {history, useNavigate} from "@@/exports";
+import {history, useNavigate} from '@@/exports';
 import {ProColumns, ProTable} from "@ant-design/pro-components";
 import {Color} from "@/utils/colorUtils";
 import '../index.less';
@@ -11,9 +11,8 @@ const SafeProblemTable: React.FC = () => {
   const navigate = useNavigate();
   const urlSearchParams = new URLSearchParams(location.search);
   // const [dataSource, setDataSource] = useState<any[]>([]);
-  const [options, setOptions] = useState<any[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [total] = useState<number>(0);
+  const [loading] = useState<boolean>(false);
   //搜索参数
   const [problemStatus, setProblemStatus] = useState<string>(() => {
     return urlSearchParams.get('status') || '全部';
@@ -64,11 +63,6 @@ const SafeProblemTable: React.FC = () => {
   }
   const handleTagClose = (removeTag: string) => {
     const update = selectedTags.filter(tag => tag !== removeTag);
-    setSelectedTags(update);
-    updateQueryParam(pageNum, problemStatus, difficulty, keyword, update);
-  }
-  const addTagToParam = (addTag: string) => {
-    const update = [...selectedTags, addTag];
     setSelectedTags(update);
     updateQueryParam(pageNum, problemStatus, difficulty, keyword, update);
   }
@@ -124,7 +118,7 @@ const SafeProblemTable: React.FC = () => {
       ellipsis: true,
       render: (_, problem) => (
         <>
-          <div className="divClassName" onClick={() => clickInspect(problem.id)}>{`${problem.id}. ${problem.title}`}</div>
+          <div className="problem-item" onClick={() => clickInspect(problem.id)}>{`${problem.id}. ${problem.title}`}</div>
         </>
       ),
     },
@@ -223,15 +217,6 @@ const SafeProblemTable: React.FC = () => {
               dropdownRender={() =>
                 <div>
                   数组
-                  {/* {options.map(option => selectedTags?.includes(option) ? */}
-                  {/*   <Tag */}
-                  {/*     onClick={() => handleTagClose(option)} */}
-                  {/*     style={{cursor: 'pointer'}} color='#f50' key={option} */}
-                  {/*   > */}
-                  {/*     {option}<CheckOutlined/> */}
-                  {/*   </Tag> : */}
-                  {/*   <Tag onClick={() => addTagToParam(option)} style={{cursor: 'pointer'}} key={option}>{option}</Tag> */}
-                  {/* )} */}
                 </div>
               }
             />
