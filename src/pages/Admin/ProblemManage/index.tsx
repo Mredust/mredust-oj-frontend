@@ -1,328 +1,316 @@
-import {addRule, removeRule, rule, updateRule} from '@/services/ant-design-pro/api';
-import {PlusOutlined} from '@ant-design/icons';
-import type {ActionType, ProColumns, ProDescriptionsItemProps} from '@ant-design/pro-components';
-import {
-  FooterToolbar,
-  ModalForm,
-  PageContainer,
-  ProDescriptions,
-  ProFormText,
-  ProFormTextArea,
-  ProTable,
-} from '@ant-design/pro-components';
-import '@umijs/max';
-import {Button, Drawer, Input, message} from 'antd';
-import React, {useRef, useState} from 'react';
-import type {FormValueType} from './components/UpdateForm';
-import UpdateForm from './components/UpdateForm';
+import {CheckOutlined, PlusOutlined, TagsOutlined} from '@ant-design/icons';
+import type {ProColumns} from '@ant-design/pro-components';
+import {ProTable} from '@ant-design/pro-components';
+import {Button, Card, Col, message, Popconfirm, Row, Select, Space, Tag, Tooltip} from 'antd';
+import React, {useEffect, useState} from 'react';
+import {deleteProblemAPI, getProblemListAPI} from "@/services/problem-set/api";
+import moment from "moment";
+import {history} from "@umijs/max";
+import Search from "antd/es/input/Search";
+import {useNavigate} from "umi";
+import {Color} from "@/utils/colorUtils";
+import {IconFont} from "@/utils/iconUtil";
 
-/**
- * @en-US Add node
- * @zh-CN 添加节点
- * @param fields
- */
-const handleAdd = async (fields: API.RuleListItem) => {
-  const hide = message.loading('正在添加');
-  try {
-    await addRule({
-      ...fields,
-    });
-    hide();
-    message.success('Added successfully');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Adding failed, please try again!');
-    return false;
+const ProblemManage: React.FC = () => {
+  const navigate = useNavigate();
+  const urlSearchParams = new URLSearchParams(location.search);
+  const [visible, setVisible] = useState<boolean>(false);
+  const [targetId, setTargetId] = useState<number>(-1);
+  const [dataSource, setDataSource] = useState<ProblemAPI.ProblemVO[]>([]);
+  const [total, setTotal] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  //搜索参数
+  const [pageNum, setPageNum] = useState(() => {
+    return Number(urlSearchParams.get('pageNum')) || 1;
+  });
+  const [difficulty, setDifficulty] = useState<string>(() => {
+    return urlSearchParams.get('difficulty') || '全部'
+  });
+  const [keyword, setKeyword] = useState<string>(() => {
+    return urlSearchParams.get('keyword') || ''
+  })
+  const [selectedTags, setSelectedTags] = useState<string[]>(() => {
+    return urlSearchParams.getAll('tags') || [];
+  });
+
+  const [options, setOptions] = useState<any[]>([]);
+
+  //重新获取数据
+  const reloadData = () => {
+    const params = {
+      pageNum: pageNum,
+    }
+    setLoading(true);
+    getProblemListAPI({...params} as ProblemAPI.ProblemQueryRequest).then(res => {
+      if (res.code === 200) {
+        setDataSource(res.data.records);
+        setTotal(res.data.total)
+        setLoading(false);
+      }
+    })
   }
-};
 
-/**
- * @en-US Update node
- * @zh-CN 更新节点
- *
- * @param fields
- */
-const handleUpdate = async (fields: FormValueType) => {
-  const hide = message.loading('Configuring');
-  try {
-    await updateRule({
-      name: fields.name,
-      desc: fields.desc,
-      key: fields.key,
+  //监听路径参数变化
+  useEffect(() => {
+    reloadData()
+  }, [location.search]);
+
+  //有关搜索参数
+  const updateQueryParam = (pageNum: number, difficulty: string, keyword: string, selectedTags: string[]) => {
+    const params = new URLSearchParams({
+      pageNum: pageNum.toString(),
+      difficulty,
+      keyword: keyword,
     });
-    hide();
-    message.success('Configuration is successful');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Configuration failed, please try again!');
-    return false;
+    selectedTags.forEach(tag => params.append('tags', tag));
+    //将搜索参数拼接到query上
+    navigate({
+      search: `?${params.toString()}`
+    })
   }
-};
-
-/**
- *  Delete node
- * @zh-CN 删除节点
- *
- * @param selectedRows
- */
-const handleRemove = async (selectedRows: API.RuleListItem[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
-  try {
-    await removeRule({
-      key: selectedRows.map((row) => row.key),
-    });
-    hide();
-    message.success('Deleted successfully and will refresh soon');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Delete failed, please try again');
-    return false;
+  const changePage = (page: number) => {
+    //将参数拼接到path上
+    setPageNum(page);
+    updateQueryParam(page, difficulty, keyword, selectedTags);
   }
-};
-const TableList: React.FC = () => {
-  /**
-   * @en-US Pop-up window of new window
-   * @zh-CN 新建窗口的弹窗
-   *  */
-  const [createModalOpen, handleModalOpen] = useState<boolean>(false);
-  /**
-   * @en-US The pop-up window of the distribution update window
-   * @zh-CN 分布更新窗口的弹窗
-   * */
-  const [updateModalOpen, handleUpdateModalOpen] = useState<boolean>(false);
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-  const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
+  const changeDifficulty = (newDifficulty: string) => {
+    setDifficulty(newDifficulty);
+    updateQueryParam(pageNum, newDifficulty, keyword, selectedTags);
+  }
+  const onSearch = (value: string) => {
+    setKeyword(value);
+    updateQueryParam(pageNum, difficulty, value, selectedTags);
+  }
+  const handleTagClose = (removeTag: string) => {
+    const update = selectedTags.filter(tag => tag !== removeTag);
+    setSelectedTags(update);
+    updateQueryParam(pageNum, difficulty, keyword, update);
+  }
+  const addTagToParam = (addTag: string) => {
+    const update = [...selectedTags, addTag];
+    setSelectedTags(update);
+    updateQueryParam(pageNum, difficulty, keyword, update);
+  }
 
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
 
-  const columns: ProColumns<API.RuleListItem>[] = [
+  //针对题目的操作
+  const clickInspect = (id: number) => {
+    history.push(`/problemset/${id}`)
+  }
+
+  const clickEdit = (id: number) => {
+    setVisible(true);
+    setTargetId(id);
+  }
+
+  const handleDelete = (id: number) => {
+    deleteProblemAPI({id}).then(res => {
+      if (res.code === 200) {
+        message.info('成功删除！');
+        reloadData()
+      }
+    })
+  }
+
+  const handleAddProblem = () => {
+    history.push('/admin/problem-manage/create')
+  }
+
+  const columns: ProColumns<ProblemAPI.ProblemVO>[] = [
     {
-      title: '规则名称',
-      dataIndex: 'name',
-      render: (dom, entity) => {
+      title: 'ID',
+      dataIndex: 'id',
+      ellipsis: true,
+      width: '5%',
+      align: 'center'
+    },
+    {
+      title: '题目',
+      width: '20%',
+      dataIndex: 'title',
+      ellipsis: true,
+    },
+    {
+      title: '标签',
+      ellipsis: true,
+      width: '18%',
+      render: (_, record) => (
+        <Space>
+          {record.tags.map((tag) => (
+            <Tag key={tag}>{tag}</Tag>
+          ))}
+        </Space>
+      ),
+    },
+    {
+      title: '通过率',
+      width: '8%',
+      align: 'center',
+      render: (dom, record) => {
+        return <>{((record.acceptedNum / record.submitNum || 0) * 100).toFixed(2)}%</>
+      }
+    },
+    {
+      title: '难度',
+      width: '5%',
+      align: 'center',
+      render: (_, record) => {
+        return (<>
+          {
+            record.difficulty === 0 && <span style={{marginRight: 0, color: Color.EASY}}>简单</span> ||
+            record.difficulty === 1 &&
+            <span style={{marginRight: 0, color: Color.MEDIUM}}>中等</span> ||
+            record.difficulty === 2 && <span style={{marginRight: 0, color: Color.HARD}}>困难</span>
+          }
+        </>)
+      }
+    },
+    {
+      title: '判题配置',
+      width: '22%',
+      render: (dom, record) => {
         return (
-          <a
-            onClick={() => {
-              setCurrentRow(entity);
-              setShowDetail(true);
-            }}
-          >
-            {dom}
-          </a>
-        );
-      },
+          <>
+            <Tag icon={<IconFont type='icon-miaobiao'/>}>{record.judgeConfig?.timeLimit}ms</Tag>
+            <Tag icon={<IconFont type='icon-neicun'/>}>{record.judgeConfig?.memoryLimit}MB</Tag>
+            <Tag icon={<IconFont type='icon-kongjian'/>}>{record.judgeConfig?.stackLimit}MB</Tag>
+          </>
+        )
+      }
     },
     {
-      title: '描述',
-      dataIndex: 'desc',
-      valueType: 'textarea',
-    },
-    {
-      title: '服务调用次数',
-      dataIndex: 'callNo',
-      sorter: true,
-      hideInForm: true,
-      renderText: (val: string) => `${val}${'万'}`,
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      hideInForm: true,
-      valueEnum: {
-        0: {
-          text: '关闭',
-          status: 'Default',
-        },
-        1: {
-          text: '运行中',
-          status: 'Processing',
-        },
-        2: {
-          text: '已上线',
-          status: 'Success',
-        },
-        3: {
-          text: '异常',
-          status: 'Error',
-        },
-      },
-    },
-    {
-      title: '上次调度时间',
-      sorter: true,
-      dataIndex: 'updatedAt',
-      valueType: 'dateTime',
-      renderFormItem: (item, {defaultRender, ...rest}, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return <Input {...rest} placeholder={'请输入异常原因！'}/>;
-        }
-        return defaultRender(item);
-      },
+      title: '创建时间',
+      width: '12%',
+      render: (dom, record) => {
+        return <>
+          {moment(new Date(record.createTime).toISOString()).format('YYYY-MM-DD HH:mm:ss')}
+        </>
+      }
     },
     {
       title: '操作',
-      dataIndex: 'option',
       valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalOpen(true);
-            setCurrentRow(record);
-          }}
-        >
-          配置
-        </a>,
-        <a key="subscribeAlert" href="https://procomponents.ant.design/">
-          订阅警报
-        </a>,
-      ],
+      key: 'option',
+      width: '10%',
+      align: 'center',
+      render: (dom, record) => {
+        return (<>
+          <Tooltip placement="top" title="查看" color="#FA541C">
+            <Button onClick={() => clickInspect(record.id)} type="text" icon={
+              <IconFont type='icon-chakan'/>}></Button>
+          </Tooltip>
+
+          <Tooltip placement="top" title="编辑" color="#FA541C">
+            <Button onClick={() => clickEdit(record.id)} type="text" icon={
+              <IconFont type='icon-bianji'/>}></Button>
+          </Tooltip>
+
+          <Popconfirm onConfirm={() => handleDelete(record.id)} title="删除题目" description="确定要删除该题目？" okText="确定" cancelText="取消">
+            <Button type="text" icon={<IconFont type='icon-shanchu'/>}></Button>
+          </Popconfirm>
+        </>);
+      },
     },
   ];
+
+  useEffect(() => {
+    reloadData();
+  }, []);
+
   return (
-    <PageContainer>
-      <ProTable<API.RuleListItem, API.PageParams>
-        headerTitle={'查询表格'}
-        actionRef={actionRef}
-        rowKey="key"
-        search={{
-          labelWidth: 120,
+    <Card bodyStyle={{padding: 0}} style={{borderRadius: 4}}>
+      <Row style={{padding: '24px 24px 0 24px'}}>
+        <Col flex='160px'>
+          难度：
+          <Select
+            value={difficulty}
+            onChange={changeDifficulty}
+            options={[
+              {value: '全部', label: '全部'},
+              {value: '简单', label: '简单'},
+              {value: '中等', label: '中等'},
+              {value: '困难', label: '困难'},
+            ]}
+          />
+        </Col>
+
+        <Col flex='auto'>
+          <Row justify="space-around" align="middle">
+            <Col flex='66px'>
+              <div style={{fontSize: 14}}>
+                <TagsOutlined/>
+                <span style={{marginLeft: 8}}>标签：</span>
+              </div>
+            </Col>
+            <Col flex='auto'>
+              <Select
+                mode="multiple"
+                showSearch={false}
+                value={selectedTags}
+                style={{width: '60%'}}
+                dropdownStyle={{padding: 12}}
+                tagRender={(tag) => {
+                  return (
+                    <Tag closable={true} onClose={() => {
+                      handleTagClose(tag.value)
+                    }} style={{marginRight: 3}}>
+                      {tag.value}
+                    </Tag>
+                  )
+                }}
+                dropdownRender={() =>
+                  <div>
+                    {options.map(option => selectedTags?.includes(option) ?
+                      <Tag
+                        onClick={() => handleTagClose(option)}
+                        style={{cursor: 'pointer'}} color='#f50' key={option}
+                      >
+                        {option}<CheckOutlined/>
+                      </Tag> :
+                      <Tag onClick={() => addTagToParam(option)} style={{cursor: 'pointer'}} key={option}>{option}</Tag>
+                    )}
+                  </div>
+                }
+              />
+            </Col>
+          </Row>
+
+        </Col>
+
+
+        <Col flex='300px' style={{float: 'right'}}>
+          <Search placeholder="输入搜索关键词" allowClear onSearch={onSearch}/>
+        </Col>
+      </Row>
+
+      <ProTable<ProblemAPI.ProblemVO>
+        loading={loading}
+        dataSource={dataSource}
+        columns={columns}
+        rowKey="id"
+        search={false}
+        options={false}
+        pagination={{
+          total: total,
+          current: pageNum,
+          pageSize: 10,
+          onChange: changePage
         }}
+        headerTitle="题库列表"
         toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalOpen(true);
-            }}
-          >
-            <PlusOutlined/> 新建
+          <Button key="button" icon={<PlusOutlined/>} onClick={handleAddProblem} type="primary">
+            新建题目
           </Button>,
         ]}
-        request={rule}
-        columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => {
-            setSelectedRows(selectedRows);
-          },
-        }}
-      />
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              已选择{' '}
-              <a
-                style={{
-                  fontWeight: 600,
-                }}
-              >
-                {selectedRowsState.length}
-              </a>{' '}
-              项 &nbsp;&nbsp;
-              <span>
-                服务调用次数总计 {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)} 万
-              </span>
-            </div>
-          }
-        >
-          <Button
-            onClick={async () => {
-              await handleRemove(selectedRowsState);
-              setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
-            }}
-          >
-            批量删除
-          </Button>
-          <Button type="primary">批量审批</Button>
-        </FooterToolbar>
-      )}
-      <ModalForm
-        title={'新建规则'}
-        width="400px"
-        open={createModalOpen}
-        onOpenChange={handleModalOpen}
-        onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
-          if (success) {
-            handleModalOpen(false);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-      >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: '规则名称为必填项',
-            },
-          ]}
-          width="md"
-          name="name"
-        />
-        <ProFormTextArea width="md" name="desc"/>
-      </ModalForm>
-      <UpdateForm
-        onSubmit={async (value) => {
-          const success = await handleUpdate(value);
-          if (success) {
-            handleUpdateModalOpen(false);
-            setCurrentRow(undefined);
-            if (actionRef.current) {
-              actionRef.current.reload();
-            }
-          }
-        }}
-        onCancel={() => {
-          handleUpdateModalOpen(false);
-          if (!showDetail) {
-            setCurrentRow(undefined);
-          }
-        }}
-        updateModalOpen={updateModalOpen}
-        values={currentRow || {}}
       />
 
-      <Drawer
-        width={600}
-        open={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
-        }}
-        closable={false}
-      >
-        {currentRow?.name && (
-          <ProDescriptions<API.RuleListItem>
-            column={2}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.name,
-            }}
-            columns={columns as ProDescriptionsItemProps<API.RuleListItem>[]}
-          />
-        )}
-      </Drawer>
-    </PageContainer>
-  );
+      {/* <CreateUpdateModal */}
+      {/*   visible={visible} */}
+      {/*   targetId={targetId} */}
+      {/*   onCancel={modalCancel} */}
+      {/*   reloadData={reloadData} */}
+      {/* /> */}
+    </Card>);
 };
-export default TableList;
+
+export default ProblemManage;

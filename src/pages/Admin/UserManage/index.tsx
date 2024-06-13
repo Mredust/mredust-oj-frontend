@@ -7,7 +7,7 @@ import {deleteUserAPI, getUserListByPageAPI} from "@/services/user/api";
 import CustomModal from "@/pages/Admin/UserManage/components/CustomModal";
 
 
-export default () => {
+const UserManage: React.FC = () => {
   const [type, setType] = useState<string>('');
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserAPI.User>({} as UserAPI.User);
@@ -220,3 +220,5 @@ export default () => {
     </PageContainer>
   );
 };
+
+export default UserManage;

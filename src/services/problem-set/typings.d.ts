@@ -1,85 +1,115 @@
-declare namespace Problem {
-    type JudgeCase = {
-        input: string;
-        output: string;
-    }
+declare namespace ProblemAPI {
+  import OrderItem = CommonAPI.OrderItem;
+  type ProblemAddRequest = {
+    answer: string;
+    content: string;
+    difficulty: string;
+    judgeCase: JudgeCase[];
+    judgeConfig: JudgeConfig;
+    tags: string[];
+    title: string;
+  };
 
-    type JudgeConfig = {
-        timeLimit: number | null;
-        memoryLimit: number | null;
-        stackLimit: number | null;
-    }
+  type ProblemVO = {
+    acceptedNum: number;
+    answer: string;
+    content: string;
+    createTime: string;
+    difficulty: number;
+    favourNum: number;
+    id: number;
+    judgeCase: JudgeCase[];
+    judgeConfig: JudgeConfig;
+    submitNum: number;
+    tags: string[];
+    thumbNum: number;
+    title: string;
+    updateTime: string;
+    userId: number;
+  };
 
-    type ProblemAdd = {
-        title: string;
-        tags: string[];
-        content: string;
-        difficulty: string;
-        answer: string;
-        judgeCase: JudgeCase[];
-        judgeConfig: JudgeConfig;
-    }
+  type ProblemQueryRequest = {
+    answer: string;
+    content: string;
+    id: number;
+    /** 当前页码 */
+    pageNum: number;
+    /** 页面大小 */
+    pageSize: number;
+    tags: string[];
+    title: string;
+    userId: number;
+  };
 
-    type ProblemUpdate = {
-        id: number;
-        title: string;
-        tags: string[];
-        content: string;
-        difficulty: string;
-        answer: string;
-        judgeCase: JudgeCase[];
-        judgeConfig: JudgeConfig;
-    }
+  type PageProblem = {
+    countId: string;
+    current: number;
+    maxLimit: number;
+    optimizeCountSql: boolean;
+    orders: OrderItem[];
+    pages: number;
+    records: ProblemVO[];
+    searchCount: boolean;
+    size: number;
+    total: number;
+  };
 
-    type ProblemQuery = {
-        pageNum?: number;
-        pageSize?: number;
-        sortField?: string;
-        sortOrder?: "descend" | "ascend";
+  type ProblemUpdateRequest = {
+    answer: string;
+    content: string;
+    difficulty: string;
+    id: number;
+    judgeCase: JudgeCase[];
+    judgeConfig: JudgeConfig;
+    tags: string[];
+    title: string;
+  };
+  type JudgeCase = {
+    input: string;
+    output: string;
+  };
 
-        tags?: string[];
-        status?: string;
-        difficulty?: string;
-        keyword?: string;
-    }
+  type JudgeConfig = {
+    memoryLimit: number;
+    stackLimit: number;
+    timeLimit: number;
+  };
 
-    type Problem = {
-        id: number;
+  type Problem = {
+    acceptedNum: number;
+    answer: string;
+    content: string;
+    createTime: string;
+    difficulty: number;
+    favourNum: number;
+    id: number;
+    isDelete: number;
+    judgeCase: string;
+    judgeConfig: string;
+    submitNum: number;
+    tags: string;
+    thumbNum: number;
+    title: string;
+    updateTime: string;
+    userId: number;
+  };
 
-        title: string;
-        tags: string[];
-        content: string;
-        difficulty: string;
-        answer: string;
-        judgeCase: JudgeCase[];
-        judgeConfig: JudgeConfig;
+  type ProblemSubmitAddRequest = {
+    code: string;
+    language: string;
+    problemId: number;
+  };
 
-        submitNum: number;
-        acceptedNum: number;
-        thumbNum: number;
-        favourNum: number;
-        userId: number;
-        createTime: any;
-        updateTime: any;
-    }
-
-    type SafeProblem = {
-        id: number;
-
-        status: string;
-
-        title: string;
-        tags: string[];
-        content: string;
-        difficulty: string;
-        answer: string;
-        judgeConfig: JudgeConfig;
-
-        submitNum: number;
-        acceptedNum: number;
-        thumbNum: number;
-        favourNum: number;
-        createTime: any;
-        updateTime: any;
-    }
+  type ProblemSubmit = {
+    code: string;
+    createTime: string;
+    id: number;
+    isDelete: number;
+    judgeInfo: string;
+    language: string;
+    problemId: number;
+    status: number;
+    updateTime: string;
+    userId: number;
+  };
 }

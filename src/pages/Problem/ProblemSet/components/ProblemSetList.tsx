@@ -2,10 +2,11 @@ import React, {useState} from "react";
 import {Card, Col, Row, Select, Tag} from "antd";
 import Search from "antd/es/input/Search";
 import {CheckCircleOutlined, CloseCircleOutlined, TagsOutlined} from "@ant-design/icons";
-import {history, useNavigate} from '@@/exports';
+import {history, useNavigate} from "@umijs/max";
 import {ProColumns, ProTable} from "@ant-design/pro-components";
 import {Color} from "@/utils/colorUtils";
 import '../index.less';
+import {getProblemListAPI} from "@/services/problem-set/api";
 
 const SafeProblemTable: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const SafeProblemTable: React.FC = () => {
     return urlSearchParams.getAll('tags') || [];
   });
 
+  const [dataSource, setDataSource] = useState<ProblemAPI.ProblemVO[]>([]);
 
   //有关搜索参数
   const updateQueryParam = (pageNum: number, status: string, difficulty: string, keyword: string, selectedTags: string[]) => {
@@ -66,37 +68,19 @@ const SafeProblemTable: React.FC = () => {
     setSelectedTags(update);
     updateQueryParam(pageNum, problemStatus, difficulty, keyword, update);
   }
+  const getProblemList = async (params: any) => {
+    const {data, code} = await getProblemListAPI({...params})
+    return {
+      data: data.records,
+      success: code === 200,
+      total: Number(data.total),
+    }
+  }
 
   //针对题目的操作
   const clickInspect = (id: number) => {
     history.push(`/problemset/${id}`)
   }
-  const dataSource = [
-    {
-      id: 1,
-      title: "两数之和",
-      status: 1,
-      acceptedNum: 20,
-      submitNum: 44,
-      difficulty: 1
-    },
-    {
-      id: 2,
-      title: "链表",
-      status: 1,
-      acceptedNum: 120,
-      submitNum: 414,
-      difficulty: 2
-    },
-    {
-      id: 3,
-      title: "正则表达式匹配",
-      status: 2,
-      acceptedNum: 10,
-      submitNum: 4,
-      difficulty: 3
-    },
-  ]
 
   const columns: ProColumns<any>[] = [
     {
@@ -137,9 +121,9 @@ const SafeProblemTable: React.FC = () => {
       render: (_, entity) => {
         return (<>
           {
-            entity.difficulty === 1 && <span style={{marginRight: 0, color: Color.EASY}}>简单</span> ||
-            entity.difficulty === 2 && <span style={{marginRight: 0, color: Color.MEDIUM}}>中等</span> ||
-            entity.difficulty === 3 && <span style={{marginRight: 0, color: Color.HARD}}>困难</span>
+            entity.difficulty === 0 && <span style={{marginRight: 0, color: Color.EASY}}>简单</span> ||
+            entity.difficulty === 1 && <span style={{marginRight: 0, color: Color.MEDIUM}}>中等</span> ||
+            entity.difficulty === 2 && <span style={{marginRight: 0, color: Color.HARD}}>困难</span>
           }
         </>)
       }
@@ -229,10 +213,11 @@ const SafeProblemTable: React.FC = () => {
       </Col>
     </Row>
 
-    <ProTable<any>
+    <ProTable<ProblemAPI.ProblemVO>
       loading={loading}
-      dataSource={dataSource}
       columns={columns}
+      request={getProblemList}
+      cardBordered
       rowKey="id"
       search={false}
       options={false}

@@ -20,7 +20,13 @@ export default [
     path: '/admin/problem-manage',
     icon: 'table',
     component: './Admin/ProblemManage',
-    access: 'canAdmin'
+    access: 'canAdmin',
+  },
+  {
+    path: '/admin/problem-manage',
+    routes: [
+      {name: '题目详情', path: '/admin/problem-manage/create', component: './Admin/ProblemManage/components/Create'},
+    ],
   },
   {name: '用户管理', path: '/admin/user-manage', icon: 'table', component: './Admin/UserManage', access: 'canAdmin',},
   {path: '/', redirect: '/problemset'},
