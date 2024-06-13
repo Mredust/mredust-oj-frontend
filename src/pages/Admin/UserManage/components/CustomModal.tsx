@@ -53,7 +53,6 @@ const CustomModal: React.FC<PropsWithChildren<CustomModalProps>> = (props) => {
         <Form
           layout={'horizontal'}
           form={form}
-          clearOnDestroy
           onFinish={(values) => onFinish(values)}
           initialValues={type === 'update' ? oldData : {}}
           name="form-data"

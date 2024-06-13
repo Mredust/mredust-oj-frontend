@@ -3,7 +3,7 @@ declare namespace ProblemAPI {
   type ProblemAddRequest = {
     answer: string;
     content: string;
-    difficulty: string;
+    difficulty: number;
     judgeCase: JudgeCase[];
     judgeConfig: JudgeConfig;
     tags: string[];

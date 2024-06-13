@@ -1,4 +1,4 @@
-import {ProForm, ProFormList, ProFormRadio, ProFormText} from '@ant-design/pro-components';
+import {ProForm, ProFormInstance, ProFormList, ProFormRadio, ProFormText} from '@ant-design/pro-components';
 import React, {useEffect, useRef, useState} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Card, Col, Flex, Input, InputNumber, InputRef, message, Row, Tag, theme, Tooltip} from 'antd';
@@ -6,6 +6,7 @@ import {Editor} from "@bytemd/react";
 import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
 import '../../../Problem/ProblemDetail/components/md-min.css'
+import {addProblemAPI} from "@/services/problem-set/api";
 
 const tagInputStyle: React.CSSProperties = {
   width: 64,
@@ -16,28 +17,22 @@ const tagInputStyle: React.CSSProperties = {
 
 const plugins = [gfm(), highlight()]
 
-const waitTime = (time: number = 100) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
-  });
-};
-
 const Create: React.FC<any> = () => {
   const [value, setValue] = useState<string>('')
   const [difficulty, setDifficulty] = useState<number>(0);
   const {token} = theme.useToken();
-  const [tags, setTags] = useState<string[]>(['数组', "动态规划"]);
+
+  const [tags, setTags] = useState<string[]>([]);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [editInputIndex, setEditInputIndex] = useState(-1);
   const [editInputValue, setEditInputValue] = useState('');
+  const inputRef = useRef<InputRef>(null);
+  const editInputRef = useRef<InputRef>(null);
+
   const [timeLimit, setTimeLimit] = useState<number | null>(1000);
   const [memoryLimit, setMemoryLimit] = useState<number | null>(128);
   const [stackLimit, setStackLimit] = useState<number | null>(128);
-  const inputRef = useRef<InputRef>(null);
-  const editInputRef = useRef<InputRef>(null);
   useEffect(() => {
     if (inputVisible) {
       inputRef.current?.focus();
@@ -50,7 +45,6 @@ const Create: React.FC<any> = () => {
 
   const handleClose = (removedTag: string) => {
     const newTags = tags.filter((tag) => tag !== removedTag);
-    console.log(newTags);
     setTags(newTags);
   };
 
@@ -87,20 +81,61 @@ const Create: React.FC<any> = () => {
     background: token.colorBgContainer,
     borderStyle: 'dashed',
   };
+
+  const handleAddProblem = async (values: ProblemAPI.ProblemAddRequest) => {
+    const params = {
+      ...values,
+      tags,
+      judgeConfig: {
+        timeLimit,
+        memoryLimit,
+        stackLimit,
+      }
+    } as ProblemAPI.ProblemAddRequest;
+    console.log(params);
+
+    const {code, msg} = await addProblemAPI(params)
+    if (code === 200) {
+      message.success('创建成功！');
+    } else {
+      message.error(msg)
+    }
+  }
+
+
+  const formRef = useRef<
+    ProFormInstance<{
+      answer: string;
+      content: string;
+      difficulty: number;
+      judgeCase: JudgeCase[];
+      judgeConfig: JudgeConfig;
+      tags: string[];
+      title: string;
+    }>
+  >();
+  type JudgeCase = {
+    input: string;
+    output: string;
+    explain: string;
+  };
+
+  type JudgeConfig = {
+    memoryLimit: number;
+    stackLimit: number;
+    timeLimit: number;
+  };
   return (
     <Row style={{width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'center'}}>
-      <Col span={19} style={{paddingRight: 5}}>
+      <Col span={20} style={{padding: "0 50px"}}>
         <Card>
           <ProForm<ProblemAPI.ProblemAddRequest>
             layout={'horizontal'}
-            onFinish={async (values) => {
-              await waitTime(2000);
-              console.log(values);
-              message.success('提交成功');
-            }}
-            submitter={false}
+            formRef={formRef}
+            onFinish={values => handleAddProblem(values)}
           >
             <ProFormText name="title" label="标题" tooltip="最长为 24 位" placeholder="请输入标题"/>
+            {/* todo tags是否可以绑定 */}
             <ProForm.Item label="标签" name="tags">
               <Flex gap="4px 0" wrap>
                 {tags.map<React.ReactNode>((tag, index) => {
@@ -122,21 +157,22 @@ const Create: React.FC<any> = () => {
                   const tagElem = (
                     <Tag
                       key={tag}
-                      closable={index !== 0}
+                      closable={true}
                       style={{userSelect: 'none'}}
                       onClose={() => handleClose(tag)}
+                      color={'blue'}
                     >
-            <span
-              onDoubleClick={(e) => {
-                if (index !== 0) {
-                  setEditInputIndex(index);
-                  setEditInputValue(tag);
-                  e.preventDefault();
-                }
-              }}
-            >
-              {isLongTag ? `${tag.slice(0, 20)}...` : tag}
-            </span>
+                      <span
+                        onDoubleClick={(e) => {
+                          if (index !== 0) {
+                            setEditInputIndex(index);
+                            setEditInputValue(tag);
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        {isLongTag ? `${tag.slice(0, 20)}...` : tag}
+                      </span>
                     </Tag>
                   );
                   return isLongTag ? (
@@ -159,8 +195,8 @@ const Create: React.FC<any> = () => {
                     onPressEnter={handleInputConfirm}
                   />
                 ) : (
-                  <Tag style={tagPlusStyle} icon={<PlusOutlined/>} onClick={showInput}>
-                    New Tag
+                  <Tag style={tagPlusStyle} icon={<PlusOutlined/>} onClick={showInput} color={'blue'}>
+                    添加标签
                   </Tag>
                 )}
               </Flex>
@@ -174,6 +210,7 @@ const Create: React.FC<any> = () => {
                 value: difficulty,
                 onChange: (e) => setDifficulty(e.target.value),
               }}
+              initialValue={difficulty}
               colProps={{
                 span: 20,
               }}
@@ -201,8 +238,6 @@ const Create: React.FC<any> = () => {
             </ProForm.Item>
             <ProForm.Item
               label="测试用例"
-              name="judgeCase"
-              initialValue={[]}
               trigger="onValuesChange"
             >
               <ProFormList name="judgeCase" creatorButtonProps={{creatorButtonText: "新增一行测试用例"}}>
@@ -217,7 +252,6 @@ const Create: React.FC<any> = () => {
             <ProForm.Item label="时间限制" name="timeLimit">
               <InputNumber addonAfter="ms" value={timeLimit} onChange={(value) => setTimeLimit(value)}/>
             </ProForm.Item>
-
             <ProForm.Item label="内存限制" name="memoryLimit">
               <InputNumber addonAfter="MB" value={memoryLimit} onChange={(value) => setMemoryLimit(value)}/>
             </ProForm.Item>
