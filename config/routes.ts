@@ -26,6 +26,7 @@ export default [
     path: '/admin/problem-manage',
     routes: [
       {name: '题目详情', path: '/admin/problem-manage/create', component: './Admin/ProblemManage/components/Create'},
+      {name: '更新题目', path: '/admin/problem-manage/update', component: './Admin/ProblemManage/components/Update'},
     ],
   },
   {name: '用户管理', path: '/admin/user-manage', icon: 'table', component: './Admin/UserManage', access: 'canAdmin',},

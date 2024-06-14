@@ -1,13 +1,14 @@
-import {ProForm, ProFormInstance, ProFormList, ProFormRadio, ProFormText} from '@ant-design/pro-components';
+import type {ProFormInstance} from '@ant-design/pro-components';
+import {ProForm, ProFormList, ProFormRadio, ProFormText} from '@ant-design/pro-components';
 import React, {useEffect, useRef, useState} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Card, Col, Flex, Input, InputNumber, InputRef, message, Row, Tag, theme, Tooltip} from 'antd';
 import {Editor} from "@bytemd/react";
-import {history} from "@umijs/max";
+import {history, useLocation} from "@umijs/max";
 import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
 import '../../../Problem/ProblemDetail/components/md-min.css'
-import {addProblemAPI} from "@/services/problem-set/api";
+import {updateProblemAPI} from "@/services/problem-set/api";
 
 const tagInputStyle: React.CSSProperties = {
   width: 64,
@@ -19,6 +20,8 @@ const tagInputStyle: React.CSSProperties = {
 const plugins = [gfm(), highlight()]
 
 const Create: React.FC<any> = () => {
+  let location = useLocation();
+  const oldData = useState<ProblemAPI.ProblemVO>(location.state as ProblemAPI.ProblemVO)
   const [value, setValue] = useState<string>('')
   const [difficulty, setDifficulty] = useState<number>(0);
   const {token} = theme.useToken();
@@ -30,7 +33,7 @@ const Create: React.FC<any> = () => {
   const [editInputValue, setEditInputValue] = useState('');
   const inputRef = useRef<InputRef>(null);
   const editInputRef = useRef<InputRef>(null);
-
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
   const [timeLimit, setTimeLimit] = useState<number | null>(1000);
   const [memoryLimit, setMemoryLimit] = useState<number | null>(128);
   const [stackLimit, setStackLimit] = useState<number | null>(128);
@@ -83,39 +86,47 @@ const Create: React.FC<any> = () => {
     borderStyle: 'dashed',
   };
 
-  const handleAddProblem = async (values: ProblemAPI.ProblemAddRequest) => {
+  const handleUpdateProblem = async (values: ProblemAPI.ProblemUpdateRequest) => {
+    let {id} = oldData[0];
     const params = {
       ...values,
       tags,
+      id,
       judgeConfig: {
         timeLimit,
         memoryLimit,
         stackLimit,
       }
-    } as ProblemAPI.ProblemAddRequest;
+    } as ProblemAPI.ProblemUpdateRequest;
     console.log(params);
 
-    const {code, msg} = await addProblemAPI(params)
+    const {code, msg} = await updateProblemAPI(params)
     if (code === 200) {
-      message.success('创建成功！');
+      message.success('更新成功！');
       history.push("/admin/problem-manage")
     } else {
       message.error(msg)
     }
   }
 
+  const formRef = useRef<ProFormInstance>();
+  useEffect(() => {
+    if (!isFormInitialized && oldData && formRef?.current) {
+      let data = oldData[0];
+      formRef?.current?.setFieldsValue({
+        ...data
+      });
+      setDifficulty(data.difficulty)
+      setValue(data.content)
+      setTags(data.tags)
+      setTimeLimit(data.judgeConfig.timeLimit)
+      setMemoryLimit(data.judgeConfig.memoryLimit)
+      setStackLimit(data.judgeConfig.stackLimit)
+      setIsFormInitialized(true);
+      console.log('Updated form values:', formRef.current.getFieldsValue());
+    }
+  }, [oldData, formRef, isFormInitialized]);
 
-  const formRef = useRef<
-    ProFormInstance<{
-      answer: string;
-      content: string;
-      difficulty: number;
-      judgeCase: JudgeCase[];
-      judgeConfig: JudgeConfig;
-      tags: string[];
-      title: string;
-    }>
-  >();
   type JudgeCase = {
     input: string;
     output: string;
@@ -131,10 +142,10 @@ const Create: React.FC<any> = () => {
     <Row style={{width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'center'}}>
       <Col span={20} style={{padding: "0 50px"}}>
         <Card>
-          <ProForm<ProblemAPI.ProblemAddRequest>
+          <ProForm<ProblemAPI.ProblemUpdateRequest>
             layout={'horizontal'}
             formRef={formRef}
-            onFinish={values => handleAddProblem(values)}
+            onFinish={values => handleUpdateProblem(values)}
           >
             <ProFormText name="title" label="标题" tooltip="最长为 24 位" placeholder="请输入标题"/>
             {/* todo tags是否可以绑定 */}

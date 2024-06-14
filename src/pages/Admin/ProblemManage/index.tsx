@@ -14,8 +14,6 @@ import {IconFont} from "@/utils/iconUtil";
 const ProblemManage: React.FC = () => {
   const navigate = useNavigate();
   const urlSearchParams = new URLSearchParams(location.search);
-  const [visible, setVisible] = useState<boolean>(false);
-  const [targetId, setTargetId] = useState<number>(-1);
   const [dataSource, setDataSource] = useState<ProblemAPI.ProblemVO[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -94,13 +92,16 @@ const ProblemManage: React.FC = () => {
 
 
   //针对题目的操作
-  const clickInspect = (id: number) => {
+  const handleInspect = (id: number) => {
     history.push(`/problemset/${id}`)
   }
 
-  const clickEdit = (id: number) => {
-    setVisible(true);
-    setTargetId(id);
+  const handleEdit = (data: ProblemAPI.ProblemVO) => {
+    history.push({
+      pathname: '/admin/problem-manage/update',
+    }, {
+      ...data
+    })
   }
 
   const handleDelete = (id: number) => {
@@ -196,12 +197,12 @@ const ProblemManage: React.FC = () => {
       render: (dom, record) => {
         return (<>
           <Tooltip placement="top" title="查看" color="#FA541C">
-            <Button onClick={() => clickInspect(record.id)} type="text" icon={
+            <Button onClick={() => handleInspect(record.id)} type="text" icon={
               <IconFont type='icon-chakan'/>}></Button>
           </Tooltip>
 
           <Tooltip placement="top" title="编辑" color="#FA541C">
-            <Button onClick={() => clickEdit(record.id)} type="text" icon={
+            <Button onClick={() => handleEdit(record)} type="text" icon={
               <IconFont type='icon-bianji'/>}></Button>
           </Tooltip>
 
@@ -303,13 +304,6 @@ const ProblemManage: React.FC = () => {
           </Button>,
         ]}
       />
-
-      {/* <CreateUpdateModal */}
-      {/*   visible={visible} */}
-      {/*   targetId={targetId} */}
-      {/*   onCancel={modalCancel} */}
-      {/*   reloadData={reloadData} */}
-      {/* /> */}
     </Card>);
 };
 
