@@ -153,15 +153,7 @@ const UserManage: React.FC = () => {
       <ProTable<UserAPI.User>
         columns={columns}
         actionRef={actionRef}
-        cardBordered
         request={getUserList}
-        editable={{
-          type: 'multiple',
-        }}
-        columnsState={{
-          persistenceKey: 'pro-table-singe-demos',
-          persistenceType: 'localStorage',
-        }}
         rowKey="id"
         search={{
           labelWidth: 'auto',
@@ -189,7 +181,7 @@ const UserManage: React.FC = () => {
           ]
         }}
         pagination={{
-          pageSize: 5,
+          pageSize: 20,
         }}
         dateFormatter="string"
         toolBarRender={() => [

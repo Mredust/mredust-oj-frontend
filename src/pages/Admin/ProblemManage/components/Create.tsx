@@ -8,6 +8,7 @@ import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
 import '../../../Problem/ProblemDetail/components/md-min.css'
 import {addProblemAPI} from "@/services/problem-set/api";
+import MonacoEditor from "react-monaco-editor";
 
 const tagInputStyle: React.CSSProperties = {
   width: 64,
@@ -30,10 +31,13 @@ const Create: React.FC<any> = () => {
   const [editInputValue, setEditInputValue] = useState('');
   const inputRef = useRef<InputRef>(null);
   const editInputRef = useRef<InputRef>(null);
-
-  const [timeLimit, setTimeLimit] = useState<number | null>(1000);
-  const [memoryLimit, setMemoryLimit] = useState<number | null>(128);
-  const [stackLimit, setStackLimit] = useState<number | null>(128);
+  const [logHeight, setLogHeight] = useState<string>("100%");
+  const [coderHeight, setCoderHeight] = useState<string>('100%');
+  const [templateCode, setTemplateCode] = useState<string>('class Solution {\n\n}')
+  const [editorLanguage, setEditorLanguage] = useState<string>('java')
+  const [runTime, setRunTime] = useState<number | null>(1000);
+  const [runMemory, setRunMemory] = useState<number | null>(128);
+  const [runStack, setRunStack] = useState<number | null>(128);
   useEffect(() => {
     if (inputVisible) {
       inputRef.current?.focus();
@@ -84,17 +88,34 @@ const Create: React.FC<any> = () => {
   };
 
   const handleAddProblem = async (values: ProblemAPI.ProblemAddRequest) => {
+    const testCase: string[][] = [];
+    const testAnswer: string[] = [];
+    const var1: string[] = [];
+    const var2: string[] = [];
+
+    if (values.testCase && Array.isArray(values.testCase)) {
+      values.testCase.forEach((test: any) => {
+        var1.push(test.var1);
+        var2.push(test.var2);
+        testAnswer.push(test.output);
+      });
+    }
+    // 将 inputs 和 outputs 添加到 testCase 和 testAnswer 中
+    testCase.push([...var1]);
+    testCase.push([...var2]);
+
+    // 如果 testAnswer 是一个单一的数组，可以直接添加整个 outputs 数组
+
     const params = {
       ...values,
       tags,
-      judgeConfig: {
-        timeLimit,
-        memoryLimit,
-        stackLimit,
-      }
+      runTime,
+      runMemory,
+      runStack,
+      testCase,
+      testAnswer,
+      templateCode
     } as ProblemAPI.ProblemAddRequest;
-    console.log(params);
-
     const {code, msg} = await addProblemAPI(params)
     if (code === 200) {
       message.success('创建成功！');
@@ -103,30 +124,41 @@ const Create: React.FC<any> = () => {
       message.error(msg)
     }
   }
-
-
+  const options: any = {
+    selectOnLineNumbers: true,
+    roundedSelection: false,
+    readOnly: false,
+    cursorStyle: "line",
+    scrollBeyondLastLine: false,
+    scrollbar: {
+      // 滚动条
+      horizontalScrollbarSize: 8,
+      verticalScrollbarSize: 8,
+    },
+    fontSize: 13,
+    tabSize: 2,
+    minimap: {
+      enabled: false
+    },
+    automaticLayout: true
+  };
   const formRef = useRef<
     ProFormInstance<{
-      answer: string;
-      content: string;
-      difficulty: number;
-      judgeCase: JudgeCase[];
-      judgeConfig: JudgeConfig;
-      tags: string[];
       title: string;
+      content: string;
+      id: number;
+      templateCode: string;
+      difficulty: number;
+      tags: string[];
+      testCase: string[][];
+      testAnswer: string[];
+      runTime: number;
+      runMemory: number;
+      runStack: number;
+      userId: number;
     }>
   >();
-  type JudgeCase = {
-    input: string;
-    output: string;
-    explain: string;
-  };
 
-  type JudgeConfig = {
-    memoryLimit: number;
-    stackLimit: number;
-    timeLimit: number;
-  };
   return (
     <Row style={{width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'center'}}>
       <Col span={20} style={{padding: "0 50px"}}>
@@ -238,28 +270,39 @@ const Create: React.FC<any> = () => {
                 onChange={(value) => setValue(value)}
               />
             </ProForm.Item>
+            <ProForm.Item label="题目模板" name="templateCode" style={{height: 200}}>
+              <MonacoEditor
+                height={200}
+                options={options}
+                language={editorLanguage}
+                value={templateCode}
+                onChange={setTemplateCode}
+
+              />
+            </ProForm.Item>
             <ProForm.Item
               label="测试用例"
               trigger="onValuesChange"
             >
-              <ProFormList name="judgeCase" creatorButtonProps={{creatorButtonText: "新增一行测试用例"}}>
+              <ProFormList name="testCase" creatorButtonProps={{creatorButtonText: "新增一行测试用例"}}>
                 <ProForm.Group>
-                  <ProFormText name="input" placeholder={"输入"}/>
+                  <ProFormText name="var1" placeholder={"参数1"}/>
+                  <ProFormText name="var2" placeholder={"参数2"}/>
                   <ProFormText name="output" placeholder={"输出"}/>
                   <ProFormText name="explain" placeholder={"解释"}/>
                 </ProForm.Group>
               </ProFormList>
             </ProForm.Item>
 
-            <ProForm.Item label="时间限制" name="timeLimit">
-              <InputNumber addonAfter="ms" value={timeLimit} onChange={(value) => setTimeLimit(value)}/>
+            <ProForm.Item label="时间限制" name="runTime">
+              <InputNumber addonAfter="ms" value={runTime} onChange={(value) => setRunTime(value)}/>
             </ProForm.Item>
-            <ProForm.Item label="内存限制" name="memoryLimit">
-              <InputNumber addonAfter="MB" value={memoryLimit} onChange={(value) => setMemoryLimit(value)}/>
+            <ProForm.Item label="内存限制" name="runMemory">
+              <InputNumber addonAfter="MB" value={runMemory} onChange={(value) => setRunMemory(value)}/>
             </ProForm.Item>
 
-            <ProForm.Item label="堆栈限制" name="stackLimit">
-              <InputNumber addonAfter="MB" value={stackLimit} onChange={(value) => setStackLimit(value)}/>
+            <ProForm.Item label="堆栈限制" name="runStack">
+              <InputNumber addonAfter="MB" value={runStack} onChange={(value) => setRunStack(value)}/>
             </ProForm.Item>
           </ProForm>
         </Card>

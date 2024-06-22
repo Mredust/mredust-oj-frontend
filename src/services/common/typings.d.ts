@@ -10,7 +10,7 @@ declare namespace CommonAPI {
 
   type DeleteRequest = {
     /** id */
-    id?: number;
+    id: number;
   };
 
   type IdParams = {
