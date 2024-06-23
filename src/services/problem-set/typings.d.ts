@@ -101,8 +101,9 @@ declare namespace ProblemAPI {
         favourNum: number;
         userId: number;
         createTime: Date;
-        templateCode: templateCode;
+        templateCode: templateCode[];
         testCase: string[];
+        testAnswer: string[];
         runTime: number;
         runMemory: number;
         runStack: number;

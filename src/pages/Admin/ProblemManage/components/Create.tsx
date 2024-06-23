@@ -7,7 +7,7 @@ import {
     ProFormRadio,
     ProFormText
 } from '@ant-design/pro-components';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Button, Card, Col, Flex, Input, InputNumber, InputRef, message, Row, Space, Tabs, Tag, Tooltip} from 'antd';
 import {Editor} from "@bytemd/react";
@@ -18,10 +18,10 @@ import '../../../Problem/ProblemDetail/components/md-min.css'
 import {addProblemAPI} from "@/services/problem-set/api";
 import MonacoEditor from "react-monaco-editor";
 import './index.less'
+// todo 优化编辑器的样式引入
 
 
 const Create: React.FC<any> = () => {
-
     //扩展
     const plugins = [gfm(), highlight()]
     const options: any = {
@@ -42,9 +42,9 @@ const Create: React.FC<any> = () => {
         automaticLayout: true
     };
     // 参数
-    const runStackInitialState = 128;
-    const runMemoryInitialState = 128;
-    const runTimeInitialState = 1024;
+    const runStack = 128;
+    const runMemory = 128;
+    const runTime = 1024;
     const [difficulty, setDifficulty] = useState<number>(0);
     const [contentValue, setContentValue] = useState<string>('')
 
@@ -102,15 +102,12 @@ const Create: React.FC<any> = () => {
         'java': 'class Solution {\n\n}',
         'python': 'class Solution:'
     });
-    const [activeKey, setActiveKey] = useState<string>(languageList[0] || 'java');
-    const [editorLanguage, setEditorLanguage] = useState<string>(languageList[0] || 'java');
-    // @ts-ignore
-    const [editorContent, setEditorContent] = useState<string>(templateCodeList[[languageList[0] || 'java']]);
+    const initialLanguage = languageList[0] || 'java';
+    const initialTemplateCode = templateCodeList[initialLanguage] || '';
+    const [activeKey, setActiveKey] = useState<string>(initialLanguage);
+    const [editorLanguage, setEditorLanguage] = useState<string>(initialLanguage);
+    const [editorContent, setEditorContent] = useState<string>(initialTemplateCode);
     const handleTabChange = (key: string) => {
-        setTemplateCodeList((prevTemplateCode) => ({
-            ...prevTemplateCode,
-            [activeKey]: editorContent,
-        }));
         setActiveKey(key);
         setEditorLanguage(key);
         setEditorContent(templateCodeList[key]);
@@ -119,6 +116,15 @@ const Create: React.FC<any> = () => {
     const handleEditorChange = (newCode: string) => {
         setEditorContent(newCode);
     };
+    useEffect(() => {
+        setTemplateCodeList((prev) => {
+            return {
+                ...prev,
+                [activeKey]: editorContent
+            }
+        })
+    }, [activeKey, editorContent]);
+
 
     // 测试用例
     const [paramCount, setParamCount] = useState(1);
@@ -179,6 +185,7 @@ const Create: React.FC<any> = () => {
             templateCode
         } as ProblemAPI.ProblemAddRequest;
         console.log("数据参数", params)
+        return
         const {code, msg} = await addProblemAPI(params)
         if (code === 200) {
             message.success('创建成功！');
@@ -367,13 +374,13 @@ const Create: React.FC<any> = () => {
                                 </ProFormGroup>
                             </ProFormList>
                         </ProForm.Item>
-                        <ProForm.Item label="时间限制" name="runTime" initialValue={runTimeInitialState}>
+                        <ProForm.Item label="时间限制" name="runTime" initialValue={runTime}>
                             <InputNumber addonAfter="ms" placeholder={"请输入时间限制"}/>
                         </ProForm.Item>
-                        <ProForm.Item label="内存限制" name="runMemory" initialValue={runMemoryInitialState}>
+                        <ProForm.Item label="内存限制" name="runMemory" initialValue={runMemory}>
                             <InputNumber addonAfter="MB" placeholder={"请输入内存限制"}/>
                         </ProForm.Item>
-                        <ProForm.Item label="堆栈限制" name="runStack" initialValue={runStackInitialState}>
+                        <ProForm.Item label="堆栈限制" name="runStack" initialValue={runStack}>
                             <InputNumber addonAfter="MB" placeholder="请输入堆栈限制"/>
                         </ProForm.Item>
                     </ProForm>
