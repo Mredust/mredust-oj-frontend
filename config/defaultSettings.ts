@@ -17,7 +17,7 @@ const Settings: ProLayoutProps & {
   colorWeak: false,
   title: 'Online Judge',
   pwa: true,
-  logo: 'https://raw.githubusercontent.com/Mredust/images/main/file/logo.svg',
+  logo: 'https://vip.helloimg.com/i/2024/06/23/6677a609a74a7.png',
   iconfontUrl: '',
   "token": {},
   splitMenus: false

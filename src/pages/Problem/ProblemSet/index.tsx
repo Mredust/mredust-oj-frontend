@@ -5,7 +5,7 @@ import ProblemSetList from "@/pages/Problem/ProblemSet/components/ProblemSetList
 
 const ProblemSet: React.FC = () => {
     return (
-        <PageContainer>
+        <PageContainer style={{width:'60%',margin:'0 auto'}}>
             <ProblemSetList/>
         </PageContainer>
     );

@@ -13,7 +13,7 @@ const labelStyle: React.CSSProperties = {
   overflow: 'auto',
 };
 
-const Answer: React.FC<AnsProps> = () => {
+const Forum: React.FC<AnsProps> = () => {
   return (
     <div style={labelStyle}>
       TODO：题解论坛
@@ -21,4 +21,4 @@ const Answer: React.FC<AnsProps> = () => {
   )
 }
 
-export default Answer
+export default Forum

@@ -10,122 +10,124 @@ import HeaderDropdown from '../HeaderDropdown';
 import {userLogoutAPI} from "@/services/user/api";
 
 export type GlobalHeaderRightProps = {
-  menu?: boolean;
-  children?: React.ReactNode;
+    menu?: boolean;
+    children?: React.ReactNode;
 };
 
 export const AvatarName = () => {
-  const {initialState} = useModel('@@initialState');
-  const {currentUser} = initialState || {};
-  return <span className="anticon">{currentUser?.username}</span>;
+    const {initialState} = useModel('@@initialState');
+    const {currentUser} = initialState || {};
+    return <span className="anticon">{currentUser?.username}</span>;
 };
 
 const useStyles = createStyles(({token}) => {
-  return {
-    action: {
-      display: 'flex',
-      height: '48px',
-      marginLeft: 'auto',
-      overflow: 'hidden',
-      alignItems: 'center',
-      padding: '0 8px',
-      cursor: 'pointer',
-      borderRadius: token.borderRadius,
-      '&:hover': {
-        backgroundColor: token.colorBgTextHover,
-      },
-    },
-  };
+    return {
+        action: {
+            width: '60%',
+            display: 'flex',
+            height: '48px',
+            marginLeft: 'auto',
+            overflow: 'hidden',
+            alignItems: 'center',
+            padding: '0 8px',
+            cursor: 'pointer',
+            borderRadius: token.borderRadius,
+            '&:hover': {
+                backgroundColor: token.colorBgTextHover,
+            },
+        },
+    };
 });
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({children}) => {
-  /**
-   * 退出登录，并且将当前的 url 保存
-   */
-  const loginOut = async () => {
-    await userLogoutAPI();
-    const {search, pathname} = window.location;
-    const urlParams = new URL(window.location.href).searchParams;
-    /** 此方法会跳转到 redirect 参数所在的位置 */
-    const redirect = urlParams.get('redirect');
-    // Note: There may be security issues, please note
-    if (window.location.pathname !== '/user/login' && !redirect) {
-      history.replace({
-        pathname: '/user/login',
-        search: stringify({
-          redirect: pathname + search,
-        }),
-      });
-    }
-  };
-  const {styles} = useStyles();
+    /**
+     * 退出登录，并且将当前的 url 保存
+     */
+    const loginOut = async () => {
+        await userLogoutAPI();
+        const {search, pathname} = window.location;
+        const urlParams = new URL(window.location.href).searchParams;
+        /** 此方法会跳转到 redirect 参数所在的位置 */
+        const redirect = urlParams.get('redirect');
+        // Note: There may be security issues, please note
+        if (window.location.pathname !== '/user/login' && !redirect) {
+            history.replace({
+                pathname: '/user/login',
+                search: stringify({
+                    redirect: pathname + search,
+                }),
+            });
+        }
+    };
+    const {styles} = useStyles();
 
-  const {initialState, setInitialState} = useModel('@@initialState');
+    const {initialState, setInitialState} = useModel('@@initialState');
 
-  const onMenuClick = useCallback(
-    (event: MenuInfo) => {
-      const {key} = event;
-      if (key === 'logout') {
-        flushSync(() => {
-          setInitialState((s) => ({...s, currentUser: undefined}));
-        });
-        loginOut();
-        return;
-      }
-      history.push(`/account/${key}`);
-    },
-    [setInitialState],
-  );
+    const onMenuClick = useCallback(
+        (event: MenuInfo) => {
+            const {key} = event;
+            if (key === 'logout') {
+                flushSync(() => {
+                    setInitialState((s) => ({...s, currentUser: undefined}));
+                });
+                loginOut();
+                return;
+            }
+            history.push(`/account/${key}`);
+        },
+        [setInitialState],
+    );
 
-  const loading = (
-    <span className={styles.action}>
+    const loading = (
+        <span className={styles.action}>
       <Spin
-        size="small"
-        style={{
-          marginLeft: 8,
-          marginRight: 8,
-        }}
+          size="small"
+          style={{
+              marginLeft: 8,
+              marginRight: 8,
+          }}
       />
     </span>
-  );
+    );
 
-  if (!initialState) {
-    return loading;
-  }
+    if (!initialState) {
+        return loading;
+    }
 
-  const {currentUser} = initialState;
+    const {currentUser} = initialState;
 
-  if (!currentUser || !currentUser.username) {
-    return loading;
-  }
+    if (!currentUser || !currentUser.username) {
+        return loading;
+    }
 
-  const menuItems = [
-    {
-      key: 'center',
-      icon: <UserOutlined/>,
-      label: '个人中心',
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined/>,
-      label: '个人设置',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined/>,
-      label: '退出登录',
-    },
-  ];
+    const menuItems = [
+        {
+            key: 'center',
+            icon: <UserOutlined/>,
+            label: '个人中心',
+        },
+        {
+            key: 'settings',
+            icon: <SettingOutlined/>,
+            label: '个人设置',
+        },
+        {
+            key: 'logout',
+            icon: <LogoutOutlined/>,
+            label: '退出登录',
+        },
+    ];
 
-  return (
-    <HeaderDropdown
-      menu={{
-        selectedKeys: [],
-        onClick: onMenuClick,
-        items: menuItems,
-      }}
-    >
-      {children}
-    </HeaderDropdown>
-  );
+    return (
+        <HeaderDropdown
+
+            menu={{
+                selectedKeys: [],
+                onClick: onMenuClick,
+                items: menuItems,
+            }}
+        >
+            {children}
+        </HeaderDropdown>
+    );
 };
