@@ -123,6 +123,31 @@ declare namespace ProblemAPI {
         total: number;
     };
 
+    type PageProblemVo = {
+        countId: string;
+        current: number;
+        maxLimit: number;
+        optimizeCountSql: boolean;
+        orders: OrderItem[];
+        pages: number;
+        records: ProblemVO[];
+        searchCount: boolean;
+        size: number;
+        total: number;
+    };
+
+    type PageProblemSubmit = {
+        countId: string;
+        current: number;
+        maxLimit: number;
+        optimizeCountSql: boolean;
+        orders: OrderItem[];
+        pages: number;
+        records: ProblemSubmit[];
+        searchCount: boolean;
+        size: number;
+        total: number;
+    }
 
     type ProblemSubmitVO = {
         id: number;
@@ -138,6 +163,12 @@ declare namespace ProblemAPI {
         runStack: number;
     };
 
+    type ProblemSubmitQueryRequest = {
+        language: string;
+        status: number;
+        problemId: number;
+        message: string;
+    }
 
     type ProblemRunResult = {
         code: number;
