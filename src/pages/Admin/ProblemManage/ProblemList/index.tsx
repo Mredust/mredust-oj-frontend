@@ -5,71 +5,43 @@ import {Button, Divider, message, Popconfirm, Space, Tag, Typography} from 'antd
 import React, {useRef, useState} from 'react';
 import {deleteProblemAPI, getProblemListAPI} from "@/services/problem-set/api";
 import {history} from "@umijs/max";
-import {Color} from "@/utils/colorUtils";
 import {IconFont} from "@/utils/iconUtil";
+import {DifficultyUtils} from "@/utils/DifficultyUtils";
 
 const ProblemManage: React.FC = () => {
-    // 表单配置项
     const [loading, setLoading] = useState<boolean>(true);
     const actionRef = useRef<ActionType>();
-    const [searchParams, setSearchParams] = useState({} as any);
-
-    const nullObj = {
-        "id": 0,
-        "title": "",
-        "content": "",
-        "difficulty": 0,
-        "status": "",
-        "tags": [],
-        "submitNum": 0,
-        "acceptedNum": 0,
-        "thumbNum": 0,
-        "favourNum": 0,
-        "userId": "1",
-        "createTime": "",
-        "templateCode": [],
-        "testCase": [],
-        "testAnswer": [],
-        "runTime": "1024",
-        "runMemory": "1024",
-        "runStack": "1024"
-    }
 
     // 方法
-    const
-        getProblemList = async (params: any) => {
-            setLoading(true);
-            const newParams = {
-                ...params,
-                pageNum: params.current,
-                pageSize: params.pageSize,
-            }
-            const {data, code}: any = await getProblemListAPI({...searchParams, ...newParams})
-            setLoading(false);
-            return {
-                data: data.records,
-                success: code === 200,
-                total: Number(data.total),
-            }
+    const getProblemList = async (params: any) => {
+        setLoading(true);
+        const newParams = {
+            ...params,
+            pageNum: params.current,
+            pageSize: params.pageSize,
         }
+        const {data, code}: any = await getProblemListAPI({...newParams})
+        setLoading(false);
+        return {
+            data: data.records,
+            success: code === 200,
+            total: Number(data.total),
+        }
+    }
 
-    const handleAdd = () => {
-        history.push({pathname: '/admin/problem-manage/table'}, {
-            ...nullObj,
-            isUpdate: false
-        })
-    }
-    const handleCheck = (id: number) => {
-        history.push(`/problemset/${id}`)
-    }
-    const handleEdit = (data: ProblemAPI.ProblemVO) => {
+    const handleProblem = (isUpdate: boolean, data?: ProblemAPI.ProblemVO) => {
         history.push({
             pathname: '/admin/problem-manage/table',
         }, {
             ...data,
-            isUpdate: true
+            isUpdate
         })
     }
+
+    const handleCheck = (id: number) => {
+        history.push(`/problemset/${id}`)
+    }
+
     const handleDelete = async (id: CommonAPI.DeleteRequest) => {
         const hide = message.loading('正在删除');
         if (!id) {
@@ -83,21 +55,6 @@ const ProblemManage: React.FC = () => {
         hide();
     }
 
-
-    const difficultyMap = {
-        0: {
-            color: Color.EASY,
-            text: '简单',
-        },
-        1: {
-            color: Color.MEDIUM,
-            text: '中等',
-        },
-        2: {
-            color: Color.HARD,
-            text: '困难',
-        }
-    };
     const columns: ProColumns<ProblemAPI.ProblemVO>[] = [
         {
             title: 'ID',
@@ -142,8 +99,8 @@ const ProblemManage: React.FC = () => {
                 2: {text: '困难'},
             },
             render: (_, record) => {
-                // @ts-ignore
-                const {text, color} = difficultyMap[record.difficulty];
+                const color = DifficultyUtils.getColor(record.difficulty);
+                const text = DifficultyUtils.getText(record.difficulty);
                 return (<span style={{marginRight: 0, color: color}}>{text}</span>)
             }
         },
@@ -180,7 +137,7 @@ const ProblemManage: React.FC = () => {
                     <>
                         <Space split={<Divider type="vertical"/>}>
                             <Typography.Link onClick={() => handleCheck(record.id)}>查看</Typography.Link>
-                            <Typography.Link onClick={() => handleEdit(record)}>编辑</Typography.Link>
+                            <Typography.Link onClick={() => handleProblem(true, record)}>编辑</Typography.Link>
                             <Popconfirm title="您确定要删除么？" onConfirm={() => handleDelete({id: record.id})} okText="确认" cancelText="取消">
                                 <Typography.Link type="danger">删除</Typography.Link>
                             </Popconfirm>
@@ -191,27 +148,25 @@ const ProblemManage: React.FC = () => {
         },
     ];
 
-
     return (
-        <>
-            <ProTable<ProblemAPI.ProblemVO>
-                columns={columns}
-                actionRef={actionRef}
-                loading={loading}
-                request={getProblemList}
-                rowKey="id"
-                dateFormatter="string"
-                search={{
-                    filterType: 'query'
-                }}
-                pagination={{
-                    showSizeChanger: true,
-                }}
-                toolBarRender={() => [
-                    <Button key="button" icon={<PlusOutlined/>} onClick={handleAdd} type="primary">新建题目</Button>
-                ]}
-            />
-        </>
+        <ProTable<ProblemAPI.ProblemVO>
+            columns={columns}
+            actionRef={actionRef}
+            loading={loading}
+            request={getProblemList}
+            rowKey="id"
+            dateFormatter="string"
+            search={{
+                filterType: 'query'
+            }}
+            pagination={{
+                showSizeChanger: true,
+            }}
+            toolBarRender={() => [
+                <Button key="button" icon={
+                    <PlusOutlined/>} onClick={() => handleProblem(false)} type="primary">新建题目</Button>
+            ]}
+        />
     );
 };
 

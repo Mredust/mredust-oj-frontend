@@ -7,7 +7,6 @@ export const Color = {
     HARD: '#FF2D55'
 }
 
-
 //Content页面
 export const problemStatusColor = new Map<string, string>([
     ['已通过', Color.EASY],

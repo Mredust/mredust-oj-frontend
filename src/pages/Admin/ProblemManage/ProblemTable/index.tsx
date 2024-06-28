@@ -174,11 +174,12 @@ const Index: React.FC<any> = () => {
             setIsFormInitialized(true);
         }
         if (isUpdate && oldData?.templateCode) {
+            console.log(oldData.templateCode)
             const tempList: CommonAPI.StringObj = {};
             oldData.templateCode.forEach(item => {
-                const {language, code} = item;
-                if (language && code) {
-                    tempList[language] = code;
+                const {value, code} = item;
+                if (value && code) {
+                    tempList[value] = code;
                 }
             });
             setTemplateItems(tempList);
@@ -220,7 +221,7 @@ const Index: React.FC<any> = () => {
                         formRef={formRef}
                         onFinish={values => handleProblemRequest(values)}
                     >
-                        <ProFormText name="title" label="标题名称" placeholder="请输入标题"/>
+                        <ProFormText width={'md'} name="title" label="标题名称" placeholder="请输入标题"/>
                         <ProForm.Item label="题目标签" name="tags">
                             <ProblemTag
                                 tags={tags}
