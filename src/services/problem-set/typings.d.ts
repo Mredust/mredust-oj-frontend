@@ -31,14 +31,14 @@ declare namespace ProblemAPI {
     };
 
     type ProblemQueryRequest = {
-        answer: string;
-        content: string;
         id: number;
+        title: string;
+        keyword: string,
+        tags: string[];
+        status: number;
+        difficulty: number;
         pageNum: number;
         pageSize: number;
-        tags: string[];
-        title: string;
-        userId: number;
     };
 
     type ProblemSubmitAddRequest = {

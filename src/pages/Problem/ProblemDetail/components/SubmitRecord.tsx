@@ -5,6 +5,9 @@ import {Color} from "@/utils/colorUtils";
 import {getProblemLanguageAPI, getProblemSubmitListAPI, getSubmitStatusAPI} from "@/services/problem-set/api";
 import {useLocation} from "@@/exports";
 import moment from "moment";
+import {IconFont} from "@/utils/iconUtil";
+import {Space} from "antd";
+import {ClockCircleOutlined} from "@ant-design/icons";
 
 
 const Forum = () => {
@@ -26,7 +29,7 @@ const Forum = () => {
                     <div style={{fontSize: 14, color: problem.status === 3 ? Color.EASY : Color.HARD}}>
                         {problem.message}
                     </div>
-                    <div style={{fontSize: 14}}>
+                    <div style={{fontSize: 12}}>
                         {moment(new Date(problem.createTime).toISOString()).format('YYYY-MM-DD')}
                     </div>
                 </div>
@@ -35,7 +38,7 @@ const Forum = () => {
         {
             title: '语言',
             dataIndex: 'language',
-            width: '10%',
+            width: '12%',
             valueType: 'select',
             valueEnum: languageList
         },
@@ -44,12 +47,26 @@ const Forum = () => {
             search: false,
             width: '15%',
             dataIndex: 'runTime',
+            render: (_, problemSubmit) => (
+                <Space direction="horizontal" size="small" style={{display: 'flex'}}>
+                    <ClockCircleOutlined/>
+                    <div>{problemSubmit.runTime}</div>
+                    <div>ms</div>
+                </Space>
+            )
         },
         {
             title: '消耗内存',
             search: false,
             width: '15%',
             dataIndex: 'runMemory',
+            render: (_, problemSubmit) => (
+                <Space direction="horizontal" size="small" style={{display: 'flex'}}>
+                    <IconFont type='icon-neicun'/>
+                    <div>{problemSubmit.runMemory}</div>
+                    <div>MB</div>
+                </Space>
+            )
         },
         {
             title: '备注',
