@@ -7,6 +7,7 @@ import {deleteProblemAPI, getProblemListAPI} from "@/services/problem-set/api";
 import {history} from "@umijs/max";
 import {IconFont} from "@/utils/iconUtil";
 import {DifficultyUtils} from "@/utils/DifficultyUtils";
+import '@/pages/Admin/ProblemManage/ProblemList/index.less'
 
 const ProblemManage: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
@@ -149,24 +150,26 @@ const ProblemManage: React.FC = () => {
     ];
 
     return (
-        <ProTable<ProblemAPI.ProblemVO>
-            columns={columns}
-            actionRef={actionRef}
-            loading={loading}
-            request={getProblemList}
-            rowKey="id"
-            dateFormatter="string"
-            search={{
-                filterType: 'query'
-            }}
-            pagination={{
-                showSizeChanger: true,
-            }}
-            toolBarRender={() => [
-                <Button key="button" icon={
-                    <PlusOutlined/>} onClick={() => handleProblem(false)} type="primary">新建题目</Button>
-            ]}
-        />
+        <div id="problem-manage">
+            <ProTable<ProblemAPI.ProblemVO>
+                columns={columns}
+                actionRef={actionRef}
+                loading={loading}
+                request={getProblemList}
+                rowKey="id"
+                dateFormatter="string"
+                search={{
+                    filterType: 'query'
+                }}
+                pagination={{
+                    showSizeChanger: true,
+                }}
+                toolBarRender={() => [
+                    <Button key="button" icon={
+                        <PlusOutlined/>} onClick={() => handleProblem(false)} type="primary">新建题目</Button>
+                ]}
+            />
+        </div>
     );
 };
 

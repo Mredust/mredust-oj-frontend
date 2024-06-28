@@ -31,7 +31,10 @@ const Index: React.FC<any> = () => {
     const [runTime, setRunTime] = useState<number>(1000);
     const [difficulty, setDifficulty] = useState<number>(0);
     const [contentValue, setContentValue] = useState<string>('')
-    const [languageItems, setLanguageItems] = useState<{ label: string, key: string }[]>([])
+    const [languageItems, setLanguageItems] = useState<{
+        label: string,
+        key: string
+    }[]>([])
     const [templateItems, setTemplateItems] = useState<CommonAPI.StringObj>({'java': 'class Solution {\n\n}'})
     const [tabsActiveKey, setTabsActiveKey] = useState<string>('java');
     const [editorLanguage, setEditorLanguage] = useState<string>('java');
@@ -40,7 +43,9 @@ const Index: React.FC<any> = () => {
     const [inputDisabled, setInputDisabled] = useState(false);
     const [addButtonDisabled, setAddButtonDisabled] = useState(true);
     const [setParamButtonDisabled, setSetParamButtonDisabled] = useState(false);
-    const actionRef = useRef<FormListActionType<{ [key: string]: string }>>();
+    const actionRef = useRef<FormListActionType<{
+        [key: string]: string
+    }>>();
     const formRef = useRef<ProFormInstance<{
         id: number;
         userId: number;
@@ -66,12 +71,14 @@ const Index: React.FC<any> = () => {
                 label: item.language,
                 key: item.value,
             })));
-            setTemplateItems(
-                data.reduce((acc: CommonAPI.StringObj, item) => {
-                    acc[item.value] = item.code;
-                    return acc;
-                }, {})
-            );
+            if (!isUpdate) {
+                setTemplateItems(
+                    data.reduce((acc: CommonAPI.StringObj, item) => {
+                        acc[item.value] = item.code;
+                        return acc;
+                    }, {})
+                );
+            }
         }
     }
     const handleTabChange = (key: string) => {
@@ -174,15 +181,12 @@ const Index: React.FC<any> = () => {
             setIsFormInitialized(true);
         }
         if (isUpdate && oldData?.templateCode) {
-            console.log(oldData.templateCode)
-            const tempList: CommonAPI.StringObj = {};
+            const updatedItems: CommonAPI.StringObj = {};
             oldData.templateCode.forEach(item => {
                 const {value, code} = item;
-                if (value && code) {
-                    tempList[value] = code;
-                }
+                updatedItems[value] = code
             });
-            setTemplateItems(tempList);
+            setTemplateItems(updatedItems);
             setEditorContent(templateItems[tabsActiveKey] || '');
         }
         if (isUpdate && oldData?.testCase && oldData?.testCase.length > 0 && actionRef.current) {
