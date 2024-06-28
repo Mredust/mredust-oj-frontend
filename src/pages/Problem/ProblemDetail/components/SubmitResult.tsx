@@ -1,13 +1,9 @@
-import gfm from '@bytemd/plugin-gfm'
-import highlight from '@bytemd/plugin-highlight'
-import './md-min.css'
 import React, {useEffect, useState} from 'react';
 import {problemSubmitGetByIdAPI} from "@/services/problem-set/api";
 import {Alert, Card, Col, Row, Space} from "antd";
-import {Viewer} from "@bytemd/react";
 import {useLocation} from "@umijs/max";
+import MdEditor from "@/components/MdEditor";
 
-const plugins = [gfm(), highlight()]
 
 const labelStyle: React.CSSProperties = {
     padding: '0 20px',
@@ -26,7 +22,6 @@ const Result: React.FC<any> = () => {
         if (code === 200) {
             data.code = `\`\`\`\n${data.code}\n\`\`\``;
             setProblemSubmitContent(data)
-
         }
     }
     //监听路径参数变化
@@ -75,11 +70,7 @@ const Result: React.FC<any> = () => {
                     <Space size='small' style={{marginBottom: 10}}>
                         代码 {problemSubmitContent?.language}
                     </Space>
-                    <Viewer
-                        // @ts-ignore
-                        value={problemSubmitContent?.code}
-                        plugins={plugins}
-                    />
+                    <MdEditor isEdit={false} value={problemSubmitContent?.code || ''}/>
                 </Card>
             </Row>
         </div>

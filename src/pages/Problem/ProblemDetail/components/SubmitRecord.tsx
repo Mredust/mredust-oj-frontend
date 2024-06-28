@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import './md-min.css'
 import {ProColumns, ProTable} from "@ant-design/pro-components";
 import {Color} from "@/utils/colorUtils";
 import {getProblemLanguageAPI, getProblemSubmitListAPI, getSubmitStatusAPI} from "@/services/problem-set/api";

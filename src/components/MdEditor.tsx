@@ -5,9 +5,9 @@ import highlight from "@bytemd/plugin-highlight";
 import '/public/css/md-min.css'
 
 type mdEditorProps = {
-    isEdit: boolean
+    isEdit: boolean;
     value: string;
-    onChange?: React.Dispatch<React.SetStateAction<string>>
+    onChange?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const MdEditor: React.FC<mdEditorProps> = ({isEdit, value, onChange}) => {

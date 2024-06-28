@@ -6,7 +6,7 @@ type codeEditorProps = {
     height: string | number;
     language: string;
     value: string;
-    onChange: React.Dispatch<React.SetStateAction<string>>;
+    onChange: (value: string) => void;
 }
 
 const CodeEditor: React.FC<codeEditorProps> = ({height, language, value, onChange}) => {
@@ -29,16 +29,14 @@ const CodeEditor: React.FC<codeEditorProps> = ({height, language, value, onChang
         automaticLayout: true
     };
     return (
-        <>
-            <MonacoEditor
-                height={height}
-                width={width}
-                options={options}
-                language={language}
-                value={value}
-                onChange={onChange}
-            />
-        </>
+        <MonacoEditor
+            height={height}
+            width={width}
+            options={options}
+            language={language}
+            value={value}
+            onChange={onChange}
+        />
     )
 }
 

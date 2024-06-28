@@ -1,25 +1,27 @@
 declare namespace CommonAPI {
-  type BaseResponse<T> = {
-    /** 响应码 */
-    code: number;
-    /** 响应数据 */
-    data: T;
-    /** 响应消息 */
-    msg: string;
-  };
+    type BaseResponse<T> = {
+        /** 响应码 */
+        code: number;
+        /** 响应数据 */
+        data: T;
+        /** 响应消息 */
+        msg: string;
+    };
 
-  type DeleteRequest = {
-    /** id */
-    id: number;
-  };
+    type DeleteRequest = {
+        /** id */
+        id: number;
+    };
 
-  type IdParams = {
-    /** id */
-    id: number;
-  };
+    type IdParams = {
+        /** id */
+        id: number;
+    };
 
-  type OrderItem = {
-    asc?: boolean;
-    column?: string;
-  };
+    type OrderItem = {
+        asc?: boolean;
+        column?: string;
+    };
+
+    type StringObj = { [key: string]: string };
 }

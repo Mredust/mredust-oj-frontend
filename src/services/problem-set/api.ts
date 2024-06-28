@@ -3,7 +3,7 @@
 import {request} from '@umijs/max';
 
 /** 创建题目 POST /api/problem/add */
-export async function addProblemAPI(body: ProblemAPI.ProblemAddRequest, options?: { [key: string]: any }) {
+export async function addProblemAPI(body: ProblemAPI.ProblemProps, options?: { [key: string]: any }) {
     return request<CommonAPI.BaseResponse<number>>('/api/problem/add', {
         method: 'POST',
 
@@ -23,7 +23,7 @@ export async function deleteProblemAPI(id: CommonAPI.DeleteRequest) {
 
 
 /** 更新题目 PUT /api/problem/update */
-export async function updateProblemAPI(body: ProblemAPI.ProblemUpdateRequest, options?: { [key: string]: any }) {
+export async function updateProblemAPI(body: ProblemAPI.ProblemProps, options?: { [key: string]: any }) {
     return request<CommonAPI.BaseResponse<boolean>>('/api/problem/update', {
         method: 'PUT',
 
@@ -71,7 +71,7 @@ export async function getProblemVoListAPI(
 
 /** 获取语言列表 GET /api/problem/language */
 export async function getProblemLanguageAPI() {
-    return request<CommonAPI.BaseResponse<string[]>>('/api/problem/language', {
+    return request<CommonAPI.BaseResponse<ProblemAPI.templateCode[]>>('/api/problem/language', {
         method: 'GET'
     });
 }

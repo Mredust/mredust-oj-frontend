@@ -14,35 +14,60 @@ const ProblemManage: React.FC = () => {
     const actionRef = useRef<ActionType>();
     const [searchParams, setSearchParams] = useState({} as any);
 
-
-    // 方法
-    const getProblemList = async (params: any) => {
-        setLoading(true);
-        const newParams = {
-            ...params,
-            pageNum: params.current,
-            pageSize: params.pageSize,
-        }
-        const {data, code}: any = await getProblemListAPI({...searchParams, ...newParams})
-        setLoading(false);
-        return {
-            data: data.records,
-            success: code === 200,
-            total: Number(data.total),
-        }
+    const nullObj = {
+        "id": 0,
+        "title": "",
+        "content": "",
+        "difficulty": 0,
+        "status": "",
+        "tags": [],
+        "submitNum": 0,
+        "acceptedNum": 0,
+        "thumbNum": 0,
+        "favourNum": 0,
+        "userId": "1",
+        "createTime": "",
+        "templateCode": [],
+        "testCase": [],
+        "testAnswer": [],
+        "runTime": "1024",
+        "runMemory": "1024",
+        "runStack": "1024"
     }
 
+    // 方法
+    const
+        getProblemList = async (params: any) => {
+            setLoading(true);
+            const newParams = {
+                ...params,
+                pageNum: params.current,
+                pageSize: params.pageSize,
+            }
+            const {data, code}: any = await getProblemListAPI({...searchParams, ...newParams})
+            setLoading(false);
+            return {
+                data: data.records,
+                success: code === 200,
+                total: Number(data.total),
+            }
+        }
+
     const handleAdd = () => {
-        history.push('/admin/problem-manage/create')
+        history.push({pathname: '/admin/problem-manage/table'}, {
+            ...nullObj,
+            isUpdate: false
+        })
     }
     const handleCheck = (id: number) => {
         history.push(`/problemset/${id}`)
     }
     const handleEdit = (data: ProblemAPI.ProblemVO) => {
         history.push({
-            pathname: '/admin/problem-manage/update',
+            pathname: '/admin/problem-manage/table',
         }, {
-            ...data
+            ...data,
+            isUpdate: true
         })
     }
     const handleDelete = async (id: CommonAPI.DeleteRequest) => {

@@ -1,22 +1,8 @@
 declare namespace ProblemAPI {
     import OrderItem = CommonAPI.OrderItem;
-    type ProblemAddRequest = {
-        title: string;
-        content: string;
+    type ProblemProps = {
         id: number;
-        templateCode: templateCode[];
-        difficulty: number;
-        tags: string[];
-        testCase: string[];
-        testAnswer: string[];
-        runTime: number;
-        runMemory: number;
-        runStack: number;
         userId: number;
-    };
-
-    type ProblemUpdateRequest = {
-        id: number;
         title: string;
         content: string;
         templateCode: templateCode[];
@@ -27,7 +13,6 @@ declare namespace ProblemAPI {
         runTime: number;
         runMemory: number;
         runStack: number;
-        userId: number;
     };
 
     type ProblemQueryRequest = {
@@ -48,28 +33,10 @@ declare namespace ProblemAPI {
     };
 
     type templateCode = {
-        code: string;
         language: string;
+        value: string;
+        code: string;
     }
-    type Problem = {
-        acceptedNum: number;
-        answer: string;
-        content: string;
-        createTime: string;
-        difficulty: number;
-        favourNum: number;
-        id: number;
-        isDelete: number;
-        judgeCase: string;
-        judgeConfig: string;
-        submitNum: number;
-        tags: string;
-        thumbNum: number;
-        title: string;
-        updateTime: string;
-        userId: number;
-    };
-
 
     type ProblemSubmit = {
         id: number;
@@ -182,3 +149,4 @@ declare namespace ProblemAPI {
         language: string;
     }
 }
+
