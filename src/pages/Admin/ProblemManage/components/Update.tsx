@@ -10,35 +10,12 @@ import {
 import React, {useEffect, useRef, useState} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Button, Card, Col, Flex, Input, InputNumber, InputRef, message, Row, Space, Tabs, Tag, Tooltip} from 'antd';
-import {Editor} from "@bytemd/react";
 import {history, useLocation} from "@umijs/max";
-import gfm from "@bytemd/plugin-gfm";
-import highlight from "@bytemd/plugin-highlight";
-import '../../../Problem/ProblemDetail/components/md-min.css'
 import {updateProblemAPI} from "@/services/problem-set/api";
-import MonacoEditor from "react-monaco-editor";
-// todo 优化编辑器的样式引入
+import CodeEditor from "@/components/CodeEditor";
+import MdEditor from "@/components/MdEditor";
 
 const Create: React.FC<any> = () => {
-    //扩展
-    const plugins = [gfm(), highlight()]
-    const options: any = {
-        selectOnLineNumbers: true,
-        roundedSelection: false,
-        readOnly: false,
-        cursorStyle: "line",
-        scrollBeyondLastLine: false,
-        scrollbar: {
-            horizontalScrollbarSize: 8,
-            verticalScrollbarSize: 8,
-        },
-        fontSize: 13,
-        tabSize: 2,
-        minimap: {
-            enabled: false
-        },
-        automaticLayout: true
-    };
     // 参数
     let location = useLocation();
     const oldData = useState<ProblemAPI.ProblemVO>(location.state as ProblemAPI.ProblemVO)
@@ -185,6 +162,7 @@ const Create: React.FC<any> = () => {
             templateCode
         } as ProblemAPI.ProblemUpdateRequest;
         console.log("数据参数", params)
+        return
         const {code, msg} = await updateProblemAPI(params)
         if (code === 200) {
             message.success('更新成功！');
@@ -374,9 +352,9 @@ const Create: React.FC<any> = () => {
                             ]}
                         />
                         <ProForm.Item label="题目描述" name="content">
-                            <Editor
+                            <MdEditor
+                                isEdit={true}
                                 value={contentValue}
-                                plugins={plugins}
                                 onChange={(value) => setContentValue(value)}
                             />
                         </ProForm.Item>
@@ -391,13 +369,11 @@ const Create: React.FC<any> = () => {
                                 }))}
                             />
                             <div style={{border: '1px solid #E1E4E8', padding: '10px 0'}}>
-                                <MonacoEditor
+                                <CodeEditor
                                     height={200}
-                                    width={'100%'}
-                                    options={options}
                                     language={editorLanguage}
                                     value={editorContent}
-                                    onChange={handleEditorChange}
+                                    onChange={() => handleEditorChange}
                                 />
                             </div>
                         </ProForm.Item>
@@ -431,7 +407,7 @@ const Create: React.FC<any> = () => {
                                     {[...Array(paramCount).keys()].map((index) => (
                                         <ProFormText key={index} name={`var${index + 1}`} placeholder={`形参${index + 1}`}/>
                                     ))}
-                                    <ProFormText name="output" placeholder="输出"/>
+                                    <ProFormText name="output" placeholder="输出(逗号后需要加个空格)"/>
                                 </ProFormGroup>
                             </ProFormList>
                         </ProForm.Item>

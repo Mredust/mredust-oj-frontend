@@ -1,8 +1,8 @@
+import type {ProFormInstance} from '@ant-design/pro-components';
 import {
     FormListActionType,
     ProForm,
     ProFormGroup,
-    ProFormInstance,
     ProFormList,
     ProFormRadio,
     ProFormText
@@ -10,20 +10,44 @@ import {
 import React, {useEffect, useRef, useState} from 'react';
 import {PlusOutlined} from '@ant-design/icons';
 import {Button, Card, Col, Flex, Input, InputNumber, InputRef, message, Row, Space, Tabs, Tag, Tooltip} from 'antd';
-import {history} from "@umijs/max";
-import {addProblemAPI} from "@/services/problem-set/api";
-import './index.less'
-import MdEditor from "@/components/MdEditor";
-import CodeEditor from "@/components/CodeEditor";
+import {Editor} from "@bytemd/react";
+import {history, useLocation} from "@umijs/max";
+import gfm from "@bytemd/plugin-gfm";
+import highlight from "@bytemd/plugin-highlight";
+import '../../../Problem/ProblemDetail/components/md-min.css'
+import {updateProblemAPI} from "@/services/problem-set/api";
+import MonacoEditor from "react-monaco-editor";
+// todo 优化编辑器的样式引入
 
-
-const Create: React.FC<any> = () => {
+const MyTable: React.FC<any> = () => {
+    //扩展
+    const plugins = [gfm(), highlight()]
+    const options: any = {
+        selectOnLineNumbers: true,
+        roundedSelection: false,
+        readOnly: false,
+        cursorStyle: "line",
+        scrollBeyondLastLine: false,
+        scrollbar: {
+            horizontalScrollbarSize: 8,
+            verticalScrollbarSize: 8,
+        },
+        fontSize: 13,
+        tabSize: 2,
+        minimap: {
+            enabled: false
+        },
+        automaticLayout: true
+    };
     // 参数
-    const runStack = 128;
-    const runMemory = 128;
-    const runTime = 1024;
+    let location = useLocation();
+    const oldData = useState<ProblemAPI.ProblemVO>(location.state as ProblemAPI.ProblemVO)
+    const [runStack, setRunStack] = useState<number>(1024);
+    const [runMemory, setRunMemory] = useState<number>(1024);
+    const [runTime, setRunTime] = useState<number>(1000);
     const [difficulty, setDifficulty] = useState<number>(0);
     const [contentValue, setContentValue] = useState<string>('')
+
 
     // 标签相关
     const tagPlusStyle: React.CSSProperties = {
@@ -102,7 +126,6 @@ const Create: React.FC<any> = () => {
         })
     }, [activeKey, editorContent]);
 
-
     // 测试用例
     const [paramCount, setParamCount] = useState(1);
     const [inputDisabled, setInputDisabled] = useState(false);
@@ -111,8 +134,7 @@ const Create: React.FC<any> = () => {
 
     const actionRef = useRef<
         FormListActionType<{
-            output: string;
-            explain: string;
+            [key: string]: string;
         }>
     >();
     const handleConfirm = () => {
@@ -129,8 +151,8 @@ const Create: React.FC<any> = () => {
         setInputDisabled(false);
     };
 
+    const handleUpdateProblem = async (values: ProblemAPI.ProblemUpdateRequest) => {
 
-    const handleAddProblem = async (values: ProblemAPI.ProblemAddRequest) => {
         // 测试用例处理
         const testCase: string[] = [];
         const testAnswer: string[] = [];
@@ -153,25 +175,24 @@ const Create: React.FC<any> = () => {
             code: templateCodeList[key],
             language: key,
         }));
-
+        let {id} = oldData[0];
         const params = {
             ...values,
+            id,
             tags,
             testCase,
             testAnswer,
             templateCode
-        } as ProblemAPI.ProblemAddRequest;
+        } as ProblemAPI.ProblemUpdateRequest;
         console.log("数据参数", params)
-        return
-        const {code, msg} = await addProblemAPI(params)
+        const {code, msg} = await updateProblemAPI(params)
         if (code === 200) {
-            message.success('创建成功！');
+            message.success('更新成功！');
             history.push("/admin/problem-manage")
         } else {
             message.error(msg)
         }
     }
-
     const formRef = useRef<
         ProFormInstance<{
             title: string;
@@ -188,14 +209,77 @@ const Create: React.FC<any> = () => {
             userId: number;
         }>
     >();
+    // 内容填充
+    const [isFormInitialized, setIsFormInitialized] = useState(false);
+    useEffect(() => {
+        if (!isFormInitialized && oldData && formRef?.current) {
+            let data = oldData[0];
+            formRef?.current?.setFieldsValue({
+                ...data
+            });
+            setDifficulty(data.difficulty)
+            setContentValue(data.content)
+            setTags(data.tags)
+            setRunTime(data.runTime)
+            setRunMemory(data.runMemory)
+            setRunStack(data.runStack)
+            setIsFormInitialized(true);
+            console.log('Updated form values:', formRef.current.getFieldsValue());
+        }
+    }, [oldData[0], formRef, isFormInitialized]);
+    useEffect(() => {
+        oldData[0].templateCode.forEach(item => {
+            const {language, code} = item;
+            if (language && code) {
+                setTemplateCodeList(prev => ({
+                    ...prev,
+                    [language]: code
+                }));
+            }
+        });
+        setEditorContent(templateCodeList[activeKey] || '');
+    }, [oldData[0]]);
+    useEffect(() => {
+        if (oldData[0].testCase && oldData[0].testCase.length > 0) {
+            const initialTestCase = oldData[0].testCase;
+            const firstTestCase = initialTestCase[0].split(' ');
+            const testAnswer = oldData[0].testAnswer;
+            setParamCount(firstTestCase.length);
+            const formattedTestCases = initialTestCase.map((testCase) => {
+                const values = testCase.split(' ');
+                return values.reduce((acc, val, idx) => {
+                    // @ts-ignore
+                    acc[`var${idx + 1}`] = val;
+                    return acc;
+                }, {});
+            });
+
+            (testAnswer as any[]).forEach((item, index) => {
+                (formattedTestCases[index] as any)['output'] = item;
+            });
+
+            if (actionRef.current) {
+                let list = actionRef.current.getList();
+                // @ts-ignore
+                const existingListLength = list.length;
+                for (let i = existingListLength - 1; i >= 0; i--) {
+                    actionRef.current?.remove(i);
+                }
+                formattedTestCases.forEach((testCase) => {
+                    actionRef.current?.add(testCase);
+                });
+            }
+        }
+    }, [oldData[0].testCase, oldData[0].testAnswer]);
+
     return (
         <Row style={{width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'center'}}>
             <Col span={20} style={{padding: "0 50px"}}>
                 <Card>
-                    <ProForm<ProblemAPI.ProblemAddRequest>
+                    <ProForm<ProblemAPI.ProblemUpdateRequest>
                         layout={'horizontal'}
                         formRef={formRef}
-                        onFinish={values => handleAddProblem(values)}
+                        onFinish={values => handleUpdateProblem(values)}
                     >
                         <ProFormText name="title" label="标题名称" placeholder="请输入标题"/>
                         <ProForm.Item label="题目标签" name="tags">
@@ -290,9 +374,9 @@ const Create: React.FC<any> = () => {
                             ]}
                         />
                         <ProForm.Item label="题目描述" name="content">
-                            <MdEditor
-                                isEdit={true}
+                            <Editor
                                 value={contentValue}
+                                plugins={plugins}
                                 onChange={(value) => setContentValue(value)}
                             />
                         </ProForm.Item>
@@ -307,11 +391,13 @@ const Create: React.FC<any> = () => {
                                 }))}
                             />
                             <div style={{border: '1px solid #E1E4E8', padding: '10px 0'}}>
-                                <CodeEditor
+                                <MonacoEditor
                                     height={200}
+                                    width={'100%'}
+                                    options={options}
                                     language={editorLanguage}
                                     value={editorContent}
-                                    onChange={() => handleEditorChange}
+                                    onChange={handleEditorChange}
                                 />
                             </div>
                         </ProForm.Item>
@@ -365,4 +451,4 @@ const Create: React.FC<any> = () => {
     )
 }
 
-export default Create
+export default MyTable;

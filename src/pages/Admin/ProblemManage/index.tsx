@@ -1,6 +1,6 @@
 import {PlusOutlined} from '@ant-design/icons';
 import type {ProColumns} from '@ant-design/pro-components';
-import {ActionType, PageContainer, ProTable} from '@ant-design/pro-components';
+import {ActionType, ProTable} from '@ant-design/pro-components';
 import {Button, Divider, message, Popconfirm, Space, Tag, Typography} from 'antd';
 import React, {useRef, useState} from 'react';
 import {deleteProblemAPI, getProblemListAPI} from "@/services/problem-set/api";
@@ -168,7 +168,7 @@ const ProblemManage: React.FC = () => {
 
 
     return (
-        <PageContainer>
+        <>
             <ProTable<ProblemAPI.ProblemVO>
                 columns={columns}
                 actionRef={actionRef}
@@ -186,7 +186,7 @@ const ProblemManage: React.FC = () => {
                     <Button key="button" icon={<PlusOutlined/>} onClick={handleAdd} type="primary">新建题目</Button>
                 ]}
             />
-        </PageContainer>
+        </>
     );
 };
 
