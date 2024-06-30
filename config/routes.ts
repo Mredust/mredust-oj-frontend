@@ -29,6 +29,6 @@ export default [
         ],
     },
     {name: '用户管理', path: '/admin/user-manage', icon: 'table', component: './Admin/UserManage', access: 'canAdmin',},
-    {path: '/', redirect: '/problemset'},
+    {path: '/', redirect: '/welcome'},
     {path: '*', layout: false, component: './404'},
 ];
