@@ -20,3 +20,4 @@ yarn-error.log
 CNAME
 /build
 /public
+/node_modules

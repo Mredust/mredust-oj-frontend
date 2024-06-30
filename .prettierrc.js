@@ -1,3 +1,4 @@
+// Contents: Prettier configuration
 module.exports = {
   singleQuote: true,
   trailingComma: 'all',

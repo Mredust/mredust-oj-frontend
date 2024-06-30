@@ -1,3 +1,4 @@
+#@author <a href="https://github.com/Mredust">Mredust</a>
 FROM nginx
 
 WORKDIR /usr/mydata/nginx/html/

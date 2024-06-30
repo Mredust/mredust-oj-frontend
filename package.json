@@ -1,5 +1,9 @@
 {
-  "name": "ant-design-pro",
+  "name": "Mredust-Online-Judge",
+  "author": {
+    "name": "Mredust",
+    "url": "https://github.com/Mredust"
+  },
   "version": "6.0.0",
   "private": true,
   "description": "An out-of-box UI solution for enterprise applications",

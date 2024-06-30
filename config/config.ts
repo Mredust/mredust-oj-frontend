@@ -30,7 +30,6 @@ export default defineConfig({
   },
   antd: {},
   request: {},
-
   access: {},
   headScripts: [
     {

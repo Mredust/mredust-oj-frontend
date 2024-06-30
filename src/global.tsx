@@ -1,10 +1,10 @@
 import '@umijs/max';
-import { Button, message, notification } from 'antd';
+import {Button, message, notification} from 'antd';
 import defaultSettings from '../config/defaultSettings';
-const { pwa } = defaultSettings;
+
+const {pwa} = defaultSettings;
 const isHttps = document.location.protocol === 'https:';
 const clearCache = () => {
-  // remove all caches
   if (window.caches) {
     caches
       .keys()
@@ -76,8 +76,7 @@ if (pwa) {
     });
   });
 } else if ('serviceWorker' in navigator && isHttps) {
-  // unregister service worker
-  const { serviceWorker } = navigator;
+  const {serviceWorker} = navigator;
   if (serviceWorker.getRegistrations) {
     serviceWorker.getRegistrations().then((sws) => {
       sws.forEach((sw) => {
