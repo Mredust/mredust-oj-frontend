@@ -278,7 +278,7 @@ const Index: React.FC<any> = () => {
                                     height={200}
                                     language={editorLanguage}
                                     value={editorContent}
-                                    onChange={(value) => handleEditorChange(value)}
+                                    onChange={value => handleEditorChange(value)}
                                 />
                             </div>
                         </ProForm.Item>

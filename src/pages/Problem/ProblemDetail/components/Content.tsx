@@ -11,13 +11,13 @@ const Content: React.FC<ContentProps> = ({problem}) => {
     return (
         <div style={{padding: '0 10px'}}>
             <h1 className='title'>{problem.id}.{problem?.title}</h1>
-            <Space size='small' style={{margin: '10px 0'}}>
-            <span style={{paddingRight: 8}}>
-              {problem.tags.map(tag => <Tag key={tag}>{tag}</Tag>)}
-          </span>
+            <Space size='small'>
+                <span style={{paddingRight: 8}}>
+                  {problem.tags.map(tag => <Tag key={tag}>{tag}</Tag>)}
+                </span>
             </Space>
             <Row style={{margin: '20px 0'}}>
-                <MdEditor isEdit={false} value={problem?.content}/>
+                <MdEditor isEdit={false} value={problem.content}/>
             </Row>
         </div>
     )

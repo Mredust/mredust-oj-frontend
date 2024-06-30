@@ -60,7 +60,7 @@ declare namespace ProblemAPI {
         title: string;
         content: string;
         difficulty: number;
-        status: string;
+        status: number;
         tags: string[];
         submitNum: number;
         acceptedNum: number;
@@ -147,6 +147,12 @@ declare namespace ProblemAPI {
         code: string;
         input: string;
         language: string;
+    }
+
+    type dataAnalysisProps = {
+        easyNum:number,
+        mediumNum:number,
+        hardNum:number,
     }
 }
 

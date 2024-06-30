@@ -89,3 +89,10 @@ export async function getProblemSubmitListAPI(body: ProblemAPI.ProblemSubmitQuer
         data: body,
     });
 }
+
+/** 获取数据分析 GET /api/problem/data-analysis */
+export async function getProblemDataAnalysisAPI() {
+    return request<CommonAPI.BaseResponse<ProblemAPI.dataAnalysisProps[]>>('/api/problem/data-analysis', {
+        method: 'GET'
+    });
+}

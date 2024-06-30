@@ -159,14 +159,22 @@ const ProblemManage: React.FC = () => {
                 rowKey="id"
                 dateFormatter="string"
                 search={{
-                    filterType: 'query'
+                    filterType: 'query',
+                    labelWidth: 'auto',
+                    collapsed: false,
+                    collapseRender: false,
                 }}
                 pagination={{
                     showSizeChanger: true,
                 }}
                 toolBarRender={() => [
-                    <Button key="button" icon={
-                        <PlusOutlined/>} onClick={() => handleProblem(false)} type="primary">新建题目</Button>
+                    <Button
+                        key="button"
+                        icon={<PlusOutlined/>}
+                        onClick={() => handleProblem(false)} type="primary"
+                    >
+                        新建题目
+                    </Button>
                 ]}
             />
         </div>

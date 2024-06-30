@@ -47,6 +47,7 @@
   ],
   "dependencies": {
     "@ant-design/icons": "^4.8.1",
+    "@ant-design/plots": "^2.2.4",
     "@ant-design/pro-components": "^2.6.48",
     "@bytemd/plugin-gfm": "^1.21.0",
     "@bytemd/plugin-highlight": "^1.21.0",

@@ -24,4 +24,7 @@ declare namespace CommonAPI {
     };
 
     type StringObj = { [key: string]: string };
+
+
+    type enumObj = Record<string, { text: string }>
 }

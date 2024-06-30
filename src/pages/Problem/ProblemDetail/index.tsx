@@ -1,18 +1,23 @@
 import '@umijs/max';
 import React, {useEffect, useState} from 'react';
-import {Button, Card, Col, Divider, message, Row, Skeleton, Space, Tabs, TabsProps} from "antd";
+import {Button, Card, Col, Divider, message, Row, Select, Skeleton, Space, Tabs, TabsProps} from "antd";
 import Content from "@/pages/Problem/ProblemDetail/components/Content";
 import "./index.less";
 import {history} from "@umijs/max";
 import {useParams} from "react-router";
-import {getProblemByIdAPI, problemSubmitAPI, problemSubmitGetByIdAPI} from "@/services/problem-set/api";
-import {currentUser} from "@/services/ant-design-pro/api";
+import {
+  getProblemByIdAPI,
+  getProblemLanguageAPI,
+  problemSubmitAPI,
+  problemSubmitGetByIdAPI
+} from "@/services/problem-set/api";
 import {useNavigate} from "umi";
 import Forum from './components/Forum';
 import SubmitResult from "@/pages/Problem/ProblemDetail/components/SubmitResult";
 import SubmitRecord from "@/pages/Problem/ProblemDetail/components/SubmitRecord";
-import Editor from "@/pages/Problem/ProblemDetail/components/Editor";
 import {IconFont} from "@/utils/iconUtil";
+import CodeEditor from "@/components/CodeEditor";
+
 
 const ProblemDetail: React.FC = () => {
   // 加载
@@ -22,7 +27,7 @@ const ProblemDetail: React.FC = () => {
   const problemId = Number(params.id);
   const [problem, setProblem] = useState<any>();
 
-  //左侧面板
+  // region 左侧面板
   const [activeTab, setActiveTab] = useState<string>('content');
   const [id, setId] = useState<number>(() => Number(urlSearchParams.get('id')) || -1);
   const [problemItems, setProblemItems] = useState<TabsProps['items']>([
@@ -39,10 +44,10 @@ const ProblemDetail: React.FC = () => {
     {
       key: 'record',
       label: `提交记录`,
-      disabled: !currentUser,
       closable: false
     },
   ]);
+
   const updateQuery = (newTab: string, submitId: number) => {
     const params = new URLSearchParams({
       tab: newTab,
@@ -80,18 +85,21 @@ const ProblemDetail: React.FC = () => {
         (activeTab === 'result' && (<SubmitResult/>))
       )
   }
+  // endregion
 
+  // region右侧面板
+  const [templateCodeList, setTemplateCodeList] = useState<CommonAPI.StringObj>({});
+  const [editorLanguage, setEditorLanguage] = useState<string>('java');
+  const [editorCodeValue, setEditorCodeValue] = useState<string>('');
+  const [languageOptions, setLanguageOptions] = useState<{
+    value: string,
+    label: string
+  }[]>([]);
 
-  //右侧面板
-  const [templateCodeList, setTemplateCodeList] = useState<{ [key: string]: string }>({});
-  const initialLanguage = 'java';
-  const initialTemplateCode = templateCodeList[initialLanguage] || '';
-  const [editorLanguage, setEditorLanguage] = useState<string>(initialLanguage);
-  const [editorCodeValue, setEditorCodeValue] = useState<string>(initialTemplateCode)
-  const [submitLoading, setSubmitLoading] = useState<boolean>(false)
-  const [submitText, setSubmitText] = useState<string>('提交')
   const [terminalOpen, setTerminalOpen] = useState<boolean>(false);
   const [codeHeight, setCodeHeight] = useState<string>('90%');
+  const [submitLoading, setSubmitLoading] = useState<boolean>(false)
+  const [submitText, setSubmitText] = useState<string>('提交')
   const [activeTerminal, setActiveTerminal] = useState<string>('testCase');
   const [testResult, setTestResult] = useState<ProblemAPI.ProblemRunResult>();
   const [testResultLoading, setTestResultLoading] = useState<boolean>(false);
@@ -105,94 +113,41 @@ const ProblemDetail: React.FC = () => {
       label: `执行结果`,
     },
   ];
-  const labelStyle: React.CSSProperties = {
-    color: '#3c3c4399',
-    fontSize: '.75rem',
-    fontWeight: 500,
-    marginBottom: 8,
-  };
-  const cardStyle: React.CSSProperties = {
-    borderRadius: '.5rem',
-    backgroundColor: '#000a2008',
-    padding: '6px 10px',
-  };
-  const clickTerminal = () => {
-    setTerminalOpen(!terminalOpen);
-    if (terminalOpen) {
-      setCodeHeight('90%')
+
+  const getProblemLanguage = async () => {
+    const {code, data} = await getProblemLanguageAPI()
+    if (code === 200) {
+      setLanguageOptions(data.map(item => ({
+        value: item.value,
+        label: item.language
+      })))
+    }
+  }
+  const getProblemById = async () => {
+    const {code, data} = await getProblemByIdAPI({id: problemId})
+    if (code === 200) {
+      setProblem(data)
+      const templates = data.templateCode.reduce((acc, item) => {
+        acc[item.value] = item.code;
+        return acc;
+      }, {} as CommonAPI.StringObj);
+      setTemplateCodeList(templates);
+      setEditorCodeValue(templates[editorLanguage] || '');
+
     } else {
-      setCodeHeight('35%')
+      history.push('/');
     }
   }
 
-  // todo 完善
-  const getTerminalContent = () => {
-    if (activeTerminal === 'testCase') {
-      return (
-        <div style={{
-          height: '100%',
-          color: '#3c3c4399',
-          fontWeight: 500,
-          overflowY: 'auto'
-        }}>
-          <div style={labelStyle}>输入</div>
-        </div>
-      );
-    } else if (activeTerminal === 'executeResult') {
-      return testResult ? (
-        <div style={{
-          height: '100%',
-          color: '#3c3c4399',
-          fontWeight: 500,
-          overflowY: 'auto'
-        }}>
-          <div style={labelStyle}>输入</div>
-          <div style={cardStyle}>{testResult.input}</div>
-          <div style={{marginTop: 16}}></div>
-          <div style={labelStyle}>输出</div>
-          <div style={cardStyle}>{testResult.output}</div>
-        </div>
-      ) : (testResultLoading ? (
-        <Skeleton paragraph={{rows: 4}}></Skeleton>
-      ) : (
-        <div style={{
-          height: '100%',
-          color: '#3c3c4399',
-          fontWeight: 500,
-          overflowY: 'auto'
-        }}>
-          请先执行代码
-        </div>
-      ))
-    }
+  const handleSelectChange = (key: string) => {
+    setEditorLanguage(key);
+    setEditorCodeValue(templateCodeList[key] || '');
   };
 
-
-  //todo 点击运行按钮
-  const runProblem = () => {
-    setTestResultLoading(true);
-    const res = {
-      code: 200,
-      data: {
-        code: 0,
-        input: "1",
-        output: "2"
-      },
-      msg: "运行成功"
-    }
-    if (res.code === 200) {
-      message.success('运行成功！');
-      setActiveTerminal('2');
-      setTestResult(res.data);
-      setTestResultLoading(false);
-    }
-  }
-
-  //点击提交按钮
   const submitProblem = async () => {
-    setSubmitText('运行中')
-    setSubmitLoading(true)
     if (problem) {
+      setSubmitText('运行中')
+      setSubmitLoading(true)
       const params = {
         code: editorCodeValue,
         language: editorLanguage.toString(),
@@ -229,30 +184,89 @@ const ProblemDetail: React.FC = () => {
       } else {
         message.error("提交失败");
       }
-    }
 
+    }
   }
+
+  const clickTerminal = () => {
+    setTerminalOpen(!terminalOpen);
+    if (terminalOpen) {
+      setCodeHeight('90%')
+    } else {
+      setCodeHeight('35%')
+    }
+  }
+
+
+  const getTerminalContent = () => {
+    if (activeTerminal === 'testCase') {
+      return (
+        <div style={{
+          height: '100%',
+          color: '#3c3c4399',
+          fontWeight: 500,
+          overflowY: 'auto'
+        }}>
+          TODO:终端运行测试用例
+        </div>
+      );
+    } else if (activeTerminal === 'executeResult') {
+      return testResult ? (
+        <div style={{
+          height: '100%',
+          color: '#3c3c4399',
+          fontWeight: 500,
+          overflowY: 'auto'
+        }}>
+
+        </div>
+      ) : (testResultLoading ? (
+        <Skeleton paragraph={{rows: 4}}></Skeleton>
+      ) : (
+        <div style={{
+          height: '100%',
+          color: '#3c3c4399',
+          fontWeight: 500,
+          overflowY: 'auto'
+        }}>
+          请先执行代码
+        </div>
+      ))
+    }
+  };
+  const runProblem = () => {
+    setTestResultLoading(true);
+    const res = {
+      code: 200,
+      data: {
+        code: 0,
+        input: "1",
+        output: "2"
+      },
+      msg: "运行成功"
+    }
+    if (res.code === 200) {
+      message.success('运行成功！');
+      setActiveTerminal('2');
+      setTestResult(res.data);
+      setTestResultLoading(false);
+    }
+  }
+  // endregion
+
   useEffect(() => {
-    getProblemByIdAPI({id: problemId}).then(res => {
-      if (res.code === 200) {
-        setProblem(res.data)
-        res.data.templateCode.forEach(item => {
-          const {language, code} = item;
-          if (language && code) {
-            setTemplateCodeList(prev => ({
-              ...prev,
-              [language]: code
-            }));
-          }
-        });
-      } else {
-        history.push('/');
-      }
-    })
+    getProblemById();
+    getProblemLanguage();
   }, [])
+
   useEffect(() => {
-    setEditorCodeValue(templateCodeList[editorLanguage] || '')
-  }, [templateCodeList, editorLanguage]);
+    setTemplateCodeList(prev => ({
+      ...prev,
+      [editorLanguage]: editorCodeValue
+    }));
+  }, [editorCodeValue, editorLanguage])
+
+
   return (
     <Row style={{width: '100%', margin: '0 auto'}}>
       <Col span={12} style={{paddingRight: 5}}>
@@ -291,12 +305,19 @@ const ProblemDetail: React.FC = () => {
               boxSizing: 'border-box',
             }}
           >
-            <Editor
-              code={editorCodeValue}
-              setCode={setEditorCodeValue}
-              language={editorLanguage}
-              setLanguage={setEditorLanguage}
-            />
+            <div>
+              <Select
+                size='small'
+                value={editorLanguage}
+                onChange={handleSelectChange}
+                style={{width: 100, height: 30, margin: '5px 0 5px 10px'}}
+                options={languageOptions}
+              />
+              <Divider style={{margin: '5px 0 0 0'}}/>
+            </div>
+            <div style={{flexGrow: 1, marginBottom: 2, overflow: 'auto',}}>
+              <CodeEditor height={'100%'} language={editorLanguage} value={editorCodeValue} onChange={value => setEditorCodeValue(value)}/>
+            </div>
           </Card>
           <Card
             bodyStyle={{padding: 0, display: 'flex', flexDirection: 'column', height: '99%'}}
@@ -320,12 +341,12 @@ const ProblemDetail: React.FC = () => {
                 控制台 {terminalOpen ? <IconFont type='icon-down'/> : <IconFont type='icon-up'/>}
               </Button>
               <Space style={{float: 'right'}}>
-                {/* todo：判断用户是否登录在去提交代码 */}
                 {!submitLoading && (
                   <Button
                     size='small'
                     style={{width: 66, height: 28}}
                     onClick={runProblem}
+                    disabled={true}
                   >
                     运行
                   </Button>

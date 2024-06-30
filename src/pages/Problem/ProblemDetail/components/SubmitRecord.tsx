@@ -10,11 +10,11 @@ import {ClockCircleOutlined} from "@ant-design/icons";
 
 
 const Forum = () => {
-    const location = useLocation(); // 获取location对象
+    const location = useLocation();
     const urlSearchParams = new URLSearchParams(location.search);
-    const problemSubmitId = Number(urlSearchParams.get('id')) || -1;
-    const [statusList, setStatusList] = useState<Record<string, { text: string }>>({});
-    const [languageList, setLanguageList] = useState<Record<string, { text: string }>>({});
+    const problemId = Number(urlSearchParams.get('id')) || -1;
+    const [statusList, setStatusList] = useState<CommonAPI.enumObj>({});
+    const [languageList, setLanguageList] = useState<CommonAPI.enumObj>({});
 
     const columns: ProColumns<ProblemAPI.ProblemSubmit>[] = [
         {
@@ -77,15 +77,13 @@ const Forum = () => {
         const fetchData = async () => {
             const [statusRes, languageRes] = await Promise.all([getSubmitStatusAPI(), getProblemLanguageAPI()]);
             if (statusRes.code === 200 && languageRes.code === 200) {
-                const updatedStatusList = statusRes.data.reduce((acc, item) => {
-                    // @ts-ignore
-                    acc[String(item)] = {text: String(item)};
+                const updatedStatusList = statusRes.data.reduce((acc: CommonAPI.enumObj, item) => {
+                    acc[item] = {text: String(item)};
                     return acc;
                 }, {});
 
-                const updatedLanguageList = languageRes.data.reduce((acc, item) => {
-                    // @ts-ignore
-                    acc[String(item)] = {text: String(item)};
+                const updatedLanguageList = languageRes.data.reduce((acc: CommonAPI.enumObj, item) => {
+                    acc[item.value] = {text: String(item.language)};
                     return acc;
                 }, {});
                 setStatusList(updatedStatusList);
@@ -97,7 +95,7 @@ const Forum = () => {
     const getProblemSubmitList = async (params: any) => {
         const requestParams = {
             ...params,
-            problemSubmitId,
+            problemId,
         }
         const {data, code} = await getProblemSubmitListAPI({...requestParams})
         return {

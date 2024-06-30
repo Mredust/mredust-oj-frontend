@@ -9,56 +9,56 @@ import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin';
  */
 const {REACT_APP_ENV = 'dev'} = process.env;
 export default defineConfig({
-    hash: true,
-    routes,
-    theme: {
-        'root-entry-name': 'variable',
-    },
-    ignoreMomentLocale: true,
-    proxy: proxy[REACT_APP_ENV as keyof typeof proxy],
-    fastRefresh: true,
-    model: {},
-    initialState: {},
-    title: 'Ant Design 初始模板',
-    layout: {
-        locale: true,
-        ...defaultSettings,
-    },
-    moment2dayjs: {
-        preset: 'antd',
-        plugins: ['duration'],
-    },
-    antd: {},
-    request: {},
+  hash: true,
+  routes,
+  theme: {
+    'root-entry-name': 'variable',
+  },
+  ignoreMomentLocale: true,
+  proxy: proxy[REACT_APP_ENV as keyof typeof proxy],
+  fastRefresh: true,
+  model: {},
+  initialState: {},
+  title: 'Mredust 判题系统',
+  layout: {
+    locale: true,
+    ...defaultSettings,
+  },
+  moment2dayjs: {
+    preset: 'antd',
+    plugins: ['duration'],
+  },
+  antd: {},
+  request: {},
 
-    access: {},
-    headScripts: [
-        {
-            src: '/scripts/loading.js',
-            async: true,
-        },
-    ],
-    presets: ['umi-presets-pro'],
-    openAPI: [
-        {
-            requestLibPath: "import { request } from '@umijs/max'",
-            schemaPath: 'http://127.0.0.1:4091/api/api-docs',
-            projectName: 'init-backend',
-        },
-    ],
-    mfsu: {
-        strategy: 'normal',
+  access: {},
+  headScripts: [
+    {
+      src: '/scripts/loading.js',
+      async: true,
     },
-    esbuildMinifyIIFE: true,
-    requestRecord: {},
-    chainWebpack(memo) {
-        // 代码高亮显示
-        memo.plugin('monaco-editor').use(MonacoWebpackPlugin, [
-            {
-                // 支持高亮显示的代码语言
-                languages: ['java', 'javascript', 'cpp', 'python']
-            }
-        ])
-    }
+  ],
+  presets: ['umi-presets-pro'],
+  openAPI: [
+    {
+      requestLibPath: "import { request } from '@umijs/max'",
+      schemaPath: 'http://127.0.0.1:4091/api/api-docs',
+      projectName: 'init-backend',
+    },
+  ],
+  mfsu: {
+    strategy: 'normal',
+  },
+  esbuildMinifyIIFE: true,
+  requestRecord: {},
+  chainWebpack(memo) {
+    // 代码高亮显示
+    memo.plugin('monaco-editor').use(MonacoWebpackPlugin, [
+      {
+        // 支持高亮显示的代码语言
+        languages: ['java', 'javascript', 'cpp', 'python']
+      }
+    ])
+  }
 
 });

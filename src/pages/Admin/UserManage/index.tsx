@@ -12,7 +12,6 @@ const UserManage: React.FC = () => {
     const [modalVisible, setModalVisible] = useState<boolean>(false);
     const [userData, setUserData] = useState<UserAPI.User>({} as UserAPI.User);
     const actionRef = useRef<ActionType>();
-    const [searchParams, setSearchParams] = useState({} as any);
     const doDelete = async (id: CommonAPI.DeleteRequest) => {
         const hide = message.loading('正在删除');
         if (!id) {
@@ -30,10 +29,11 @@ const UserManage: React.FC = () => {
 
     const getUserList = async (params: any) => {
         const newParams = {
+            ...params,
             pageNum: params.current,
             pageSize: params.pageSize,
         }
-        const {data, code}: any = await getUserListByPageAPI({...searchParams, ...newParams})
+        const {data, code}: any = await getUserListByPageAPI({...newParams})
         return {
             data: data.records,
             success: code === 200,
@@ -158,30 +158,11 @@ const UserManage: React.FC = () => {
                 search={{
                     labelWidth: 'auto',
                     filterType: 'query',
-                    optionRender: ({searchText, resetText}, {form}) => [
-                        <Button
-                            key="searchText"
-                            type="primary"
-                            onClick={() => {
-                                const values = form?.getFieldsValue();
-                                setSearchParams(values);
-                                form?.submit();
-                            }}
-                        >
-                            {searchText}
-                        </Button>,
-                        <Button
-                            key="resetText"
-                            onClick={() => {
-                                form?.resetFields();
-                            }}
-                        >
-                            {resetText}
-                        </Button>
-                    ]
+                    collapsed: false,
+                    collapseRender: false,
                 }}
                 pagination={{
-                    pageSize: 20,
+                    showSizeChanger: true
                 }}
                 dateFormatter="string"
                 toolBarRender={() => [
