@@ -38,13 +38,6 @@ export default defineConfig({
     },
   ],
   presets: ['umi-presets-pro'],
-  openAPI: [
-    {
-      requestLibPath: "import { request } from '@umijs/max'",
-      schemaPath: 'http://127.0.0.1:4091/api/api-docs',
-      projectName: 'init-backend',
-    },
-  ],
   mfsu: {
     strategy: 'normal',
   },

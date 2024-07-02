@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import {request} from '@umijs/max';
+import { request } from '@umijs/max';
 
 /** 用户注册 POST /api/user/register */
 export async function userRegisterAPI(body: UserAPI.UserRegisterRequest, options?: { [key: string]: any }) {
