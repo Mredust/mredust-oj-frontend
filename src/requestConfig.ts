@@ -12,7 +12,7 @@ interface ResponseStructure {
 
 
 export const requestConfig: RequestConfig = {
-  baseURL: 'http://113.45.152.135:4092',
+  baseURL: 'https://mredust-oj-backend-113487-5-1327683382.sh.run.tcloudbase.com/',
   timeout: 300000,
   withCredentials: true,
   headers: {
